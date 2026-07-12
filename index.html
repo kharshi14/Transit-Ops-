@@ -50,15 +50,15 @@
         </a>
       </nav>
       <div class="sidebar-footer">
-        <div class="user-profile" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
-          <div style="display: flex; align-items: center; gap: 10px;">
+        <div class="user-profile user-profile-layout">
+          <div class="user-meta-group">
             <div class="user-avatar" id="current-user-avatar">SO</div>
             <div class="user-info">
               <span class="user-name" id="current-user-name">Ops Officer</span>
               <span class="user-role" id="current-user-role">Administrator</span>
             </div>
           </div>
-          <button id="logout-btn" class="btn-icon logout-btn" title="Sign Out" style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 6px; transition: all 0.2s;">
+          <button id="logout-btn" class="btn-icon logout-btn sidebar-logout-btn" title="Sign Out">
             <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
           </button>
         </div>
@@ -98,8 +98,8 @@
       <!-- DASHBOARD TAB CONTENT -->
       <div id="dashboard-tab-content" class="tab-content">
         <!-- Dashboard Top Filters -->
-        <section class="table-controls" style="margin-bottom: 24px;">
-          <div class="filters-row" style="width: 100%; justify-content: flex-start; gap: 20px;">
+        <section class="table-controls dashboard-controls-section">
+          <div class="filters-row dashboard-filters-row">
             <div class="filter-group">
               <label for="dashboard-type-filter">Vehicle Type</label>
               <select id="dashboard-type-filter">
@@ -126,7 +126,7 @@
         </section>
 
         <!-- KPI Metrics Grid -->
-        <section class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px;">
+        <section class="metrics-grid dashboard-metrics-grid">
           <div class="metric-card">
             <div class="metric-info">
               <span class="metric-label">Active Vehicles</span>
@@ -193,29 +193,29 @@
         </section>
 
         <!-- Charts and Detailed Breakdown Section -->
-        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-top: 24px;">
+        <div class="dashboard-split-layout">
           <!-- Left: Fleet Utilization Dial Chart (Glass Card) -->
-          <div class="metric-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; min-height: 320px;">
-            <h3 style="font-family: var(--font-display); font-weight: 700; margin-bottom: 20px; align-self: flex-start; font-size: 15px;">Fleet Capacity Load</h3>
+          <div class="metric-card dial-chart-card">
+            <h3 class="dial-chart-title">Fleet Capacity Load</h3>
             
             <!-- Circular Progress Dial -->
-            <div class="utilization-dial-container" style="position: relative; width: 160px; height: 160px; display: flex; align-items: center; justify-content: center;">
-              <svg width="160" height="160" style="transform: rotate(-90deg);">
+            <div class="utilization-dial-container dial-progress-container">
+              <svg width="160" height="160" class="dial-svg">
                 <circle cx="80" cy="80" r="70" stroke="rgba(255,255,255,0.05)" stroke-width="12" fill="transparent" />
                 <circle id="dial-progress-circle" cx="80" cy="80" r="70" stroke="var(--color-primary-hover)" stroke-width="12" fill="transparent"
                         stroke-dasharray="440" stroke-dashoffset="440" stroke-linecap="round" style="transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);" />
               </svg>
-              <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center;">
-                <span id="dial-percentage-label" style="font-family: var(--font-display); font-weight: 800; font-size: 32px; color: var(--text-primary); text-shadow: 0 0 10px var(--color-primary-glow);">0%</span>
-                <span style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Utilized</span>
+              <div class="dial-center-text">
+                <span id="dial-percentage-label" class="dial-percentage-label">0%</span>
+                <span class="dial-sub-label">Utilized</span>
               </div>
             </div>
           </div>
 
           <!-- Right: Active Routes & Fleet Status Breakdown -->
-          <div class="table-container-glass" style="margin-top: 0; padding: 20px;">
-            <h3 style="font-family: var(--font-display); font-weight: 700; margin-bottom: 16px; font-size: 15px;">Active Transit Routes</h3>
-            <div class="table-scroll-area" style="max-height: 240px; overflow-y: auto;">
+          <div class="table-container-glass dashboard-routes-card">
+            <h3 class="dashboard-routes-title">Active Transit Routes</h3>
+            <div class="table-scroll-area dashboard-routes-scroll">
               <table class="data-table">
                 <thead>
                   <tr>
@@ -229,7 +229,7 @@
                 <tbody id="dashboard-active-trips-list">
                   <tr class="empty-state-row">
                     <td colspan="5">
-                      <div class="empty-state" style="padding: 20px;">
+                      <div class="empty-state dashboard-empty-state-padding">
                         <i data-lucide="route" style="width: 24px; height: 24px;"></i>
                         <span>No active routes currently running.</span>
                       </div>

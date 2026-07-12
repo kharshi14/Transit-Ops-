@@ -1403,4 +1403,128 @@ body {
   display: none !important;
 }
 
+/* --- Extracted Layout & Component Style Modifiers --- */
+.user-profile-layout {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.user-meta-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-logout-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px;
+  border-radius: 6px;
+  transition: all 0.2s;
+}
+
+.dashboard-controls-section {
+  margin-bottom: 24px;
+}
+
+.dashboard-filters-row {
+  width: 100%;
+  justify-content: flex-start;
+  gap: 20px;
+}
+
+.dashboard-metrics-grid {
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  margin-bottom: 24px;
+}
+
+.dashboard-split-layout {
+  display: grid;
+  grid-template-columns: 1fr 2fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.dial-chart-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  min-height: 320px;
+}
+
+.dial-chart-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: 20px;
+  align-self: flex-start;
+  font-size: 15px;
+}
+
+.dial-progress-container {
+  position: relative;
+  width: 160px;
+  height: 160px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dial-svg {
+  transform: rotate(-90deg);
+}
+
+.dial-center-text {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.dial-percentage-label {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 32px;
+  color: var(--text-primary);
+  text-shadow: 0 0 10px var(--color-primary-glow);
+}
+
+.dial-sub-label {
+  font-size: 10px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dashboard-routes-card {
+  margin-top: 0 !important;
+  padding: 20px;
+}
+
+.dashboard-routes-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  margin-bottom: 16px;
+  font-size: 15px;
+}
+
+.dashboard-routes-scroll {
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.dashboard-empty-state-padding {
+  padding: 20px;
+}
+
+
 
