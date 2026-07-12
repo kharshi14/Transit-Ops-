@@ -49,12 +49,21 @@ export function validateTripStatus(status: TripStatus): void {
   }
 }
 
+export function validateRegion(region: string): void {
+  if (!region || typeof region !== 'string' || region.trim().length < 2) {
+    throw new TripValidationError('region', 'Region must be a non-empty string of at least 2 characters.');
+  }
+}
+
 export function validateCreateTrip(input: CreateTripInput): void {
   validateSourceAndDestination(input.source, input.destination);
   validateCargoWeight(input.cargoWeight);
   validatePlannedDistance(input.plannedDistance);
   validateDriverId(input.driverId);
   validateVehicleId(input.vehicleId);
+  if (input.region !== undefined) {
+    validateRegion(input.region);
+  }
   if (input.status !== undefined) {
     validateTripStatus(input.status);
   }
@@ -62,8 +71,6 @@ export function validateCreateTrip(input: CreateTripInput): void {
 
 export function validateUpdateTrip(input: UpdateTripInput): void {
   if (input.source !== undefined || input.destination !== undefined) {
-    // If updating either, we should check distinctness relative to each other if both provided,
-    // or just let the service handle cross-field validation with existing values.
     if (input.source !== undefined && input.destination !== undefined) {
       validateSourceAndDestination(input.source, input.destination);
     } else {
@@ -81,4 +88,5 @@ export function validateUpdateTrip(input: UpdateTripInput): void {
   if (input.driverId !== undefined) validateDriverId(input.driverId);
   if (input.vehicleId !== undefined) validateVehicleId(input.vehicleId);
   if (input.status !== undefined) validateTripStatus(input.status);
+  if (input.region !== undefined) validateRegion(input.region);
 }

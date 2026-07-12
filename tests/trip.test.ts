@@ -34,10 +34,13 @@ describe('Trip Management', () => {
     // Seed 1 available vehicle
     const vehicle = await vehicleRepo.save({
       id: 'v-1',
-      licensePlate: 'PLT-100',
-      makeModel: 'Ford Transit',
+      registrationNumber: 'PLT-100',
+      nameModel: 'Ford Transit',
+      type: 'Cargo Van',
       status: VehicleStatus.Available,
-      maxCargoCapacity: 3000,
+      maxLoadCapacity: 3000,
+      odometer: 100,
+      acquisitionCost: 28000,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
@@ -79,6 +82,23 @@ describe('Trip Management', () => {
       await assert.rejects(
         tripService.createTrip(invalidInput),
         (err: any) => err instanceof TripValidationError && err.field === 'destination'
+      );
+    });
+
+    test('should reject invalid regions', async () => {
+      const { tripService, driver, vehicle } = await setupServices();
+
+      await assert.rejects(
+        tripService.createTrip({
+          source: 'Warehouse A',
+          destination: 'Client B',
+          driverId: driver.id,
+          vehicleId: vehicle.id,
+          cargoWeight: 1000,
+          plannedDistance: 120,
+          region: 'X', // too short
+        }),
+        (err: any) => err instanceof TripValidationError && err.field === 'region'
       );
     });
   });

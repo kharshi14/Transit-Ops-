@@ -79,6 +79,23 @@ describe('Driver Management', () => {
         (err: any) => err instanceof DriverValidationError && err.field === 'safetyScore'
       );
     });
+
+    test('should reject invalid regions', async () => {
+      const futureDate = new Date();
+      futureDate.setFullYear(futureDate.getFullYear() + 2);
+
+      await assert.rejects(
+        service.createDriver({
+          name: 'Jane Doe',
+          licenseNumber: 'TX-RGN-ERR',
+          licenseCategory: 'CDL Class A',
+          licenseExpiryDate: futureDate,
+          contactNumber: '+1-555-0100',
+          region: 'X', // too short
+        }),
+        (err: any) => err instanceof DriverValidationError && err.field === 'region'
+      );
+    });
   });
 
   describe('Driver Service Operations', () => {

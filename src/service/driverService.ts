@@ -81,6 +81,7 @@ export class DriverService {
       safetyScore: initialScore,
       status: initialStatus,
       safetyLog: [initialLog],
+      region: input.region?.trim() || 'Texas',
       createdAt: now,
       updatedAt: now,
     };
@@ -158,6 +159,7 @@ export class DriverService {
       safetyScore: updatedSafetyScore,
       status: finalStatus,
       safetyLog: updatedLog,
+      region: input.region?.trim() ?? existing.region,
       updatedAt: new Date(),
     };
 

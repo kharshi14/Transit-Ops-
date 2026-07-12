@@ -16,10 +16,10 @@ export class InMemoryVehicleRepository implements IVehicleRepository {
     return structuredClone(vehicle);
   }
 
-  async findByLicensePlate(licensePlate: string): Promise<Vehicle | null> {
-    const normalized = licensePlate.trim().toLowerCase();
+  async findByRegistrationNumber(registrationNumber: string): Promise<Vehicle | null> {
+    const normalized = registrationNumber.trim().toLowerCase();
     for (const vehicle of this.vehicles.values()) {
-      if (vehicle.licensePlate.trim().toLowerCase() === normalized) {
+      if (vehicle.registrationNumber.trim().toLowerCase() === normalized) {
         return structuredClone(vehicle);
       }
     }

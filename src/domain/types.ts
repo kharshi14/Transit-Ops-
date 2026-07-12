@@ -23,6 +23,7 @@ export interface Driver {
   safetyScore: number; // 0 to 100
   status: DriverStatus;
   safetyLog: SafetyLogEntry[];
+  region: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +34,7 @@ export interface CreateDriverInput {
   licenseCategory: string;
   licenseExpiryDate: Date;
   contactNumber: string;
+  region?: string;
   safetyScore?: number; // 0-100, defaults to 100
   status?: DriverStatus; // defaults to 'Available'
 }
@@ -45,30 +47,51 @@ export interface UpdateDriverInput {
   contactNumber?: string;
   safetyScore?: number;
   status?: DriverStatus;
+  region?: string;
 }
 
 // --- Vehicle Interfaces ---
 export enum VehicleStatus {
   Available = 'Available',
   OnTrip = 'On Trip',
-  InMaintenance = 'In Maintenance',
+  InShop = 'In Shop',
+  Retired = 'Retired',
 }
 
 export interface Vehicle {
   id: string;
-  licensePlate: string;
-  makeModel: string;
+  registrationNumber: string; // unique
+  nameModel: string;
+  type: string; // e.g. Truck, Van, Bus
+  maxLoadCapacity: number; // in kg
+  odometer: number; // in km
+  acquisitionCost: number; // in USD or local currency
   status: VehicleStatus;
-  maxCargoCapacity: number; // in kg
+  region: string;
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateVehicleInput {
-  licensePlate: string;
-  makeModel: string;
+  registrationNumber: string;
+  nameModel: string;
+  type: string;
+  maxLoadCapacity: number;
+  odometer: number;
+  acquisitionCost: number;
+  region?: string;
   status?: VehicleStatus;
-  maxCargoCapacity: number;
+}
+
+export interface UpdateVehicleInput {
+  registrationNumber?: string;
+  nameModel?: string;
+  type?: string;
+  maxLoadCapacity?: number;
+  odometer?: number;
+  acquisitionCost?: number;
+  status?: VehicleStatus;
+  region?: string;
 }
 
 // --- Trip Interfaces ---
@@ -88,6 +111,7 @@ export interface Trip {
   cargoWeight: number; // in kg
   plannedDistance: number; // in km
   status: TripStatus;
+  region: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -99,6 +123,7 @@ export interface CreateTripInput {
   driverId: string;
   cargoWeight: number;
   plannedDistance: number;
+  region?: string;
   status?: TripStatus; // defaults to 'Draft'
 }
 
@@ -110,4 +135,22 @@ export interface UpdateTripInput {
   cargoWeight?: number;
   plannedDistance?: number;
   status?: TripStatus;
+  region?: string;
+}
+
+// --- User & RBAC Interfaces ---
+export enum UserRole {
+  Admin = 'Admin',
+  Dispatcher = 'Dispatcher',
+  Maintenance = 'Maintenance',
+  Viewer = 'Viewer',
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash: string;
+  role: UserRole;
+  createdAt: Date;
 }
