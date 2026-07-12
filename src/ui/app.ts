@@ -264,12 +264,6 @@ updateClock();
 
 // --- Seed Mock Data ---
 async function seedMockData() {
-  if (typeof window !== 'undefined' && window.localStorage) {
-    if (window.localStorage.getItem('transit_ops_seeded') === 'true') {
-      return; // Already seeded!
-    }
-  }
-
   const farFuture = new Date();
   farFuture.setFullYear(farFuture.getFullYear() + 2);
 
@@ -480,11 +474,6 @@ async function seedMockData() {
       distance: 240,
       date: pastDate,
     });
-  }
-
-  // Flag as successfully seeded to prevent future duplication
-  if (typeof window !== 'undefined' && window.localStorage) {
-    window.localStorage.setItem('transit_ops_seeded', 'true');
   }
 }
 
