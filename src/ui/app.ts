@@ -5,10 +5,14 @@ import { VehicleValidationError } from '../domain/vehicle.js';
 import { InMemoryDriverRepository } from '../repository/inMemoryDriverRepository.js';
 import { InMemoryVehicleRepository } from '../repository/inMemoryVehicleRepository.js';
 import { InMemoryTripRepository } from '../repository/inMemoryTripRepository.js';
+import { InMemoryMaintenanceRepository } from '../repository/inMemoryMaintenanceRepository.js';
+import { InMemoryExpenseRepository } from '../repository/inMemoryExpenseRepository.js';
 import { DriverService, DriverBusinessRuleError, DriverAlreadyExistsError } from '../service/driverService.js';
 import { VehicleService, VehicleBusinessRuleError, VehicleAlreadyExistsError } from '../service/vehicleService.js';
 import { TripService } from '../service/tripService.js';
 import { AuthService } from '../service/authService.js';
+import { MaintenanceService } from '../service/maintenanceService.js';
+import { ExpenseService } from '../service/expenseService.js';
 
 // Declare global Lucide icon variable from CDN script
 declare const lucide: any;
@@ -17,17 +21,21 @@ declare const lucide: any;
 const driverRepository = new InMemoryDriverRepository();
 const vehicleRepository = new InMemoryVehicleRepository();
 const tripRepository = new InMemoryTripRepository();
+const maintenanceRepository = new InMemoryMaintenanceRepository();
+const expenseRepository = new InMemoryExpenseRepository();
 
 const driverService = new DriverService(driverRepository);
 const vehicleService = new VehicleService(vehicleRepository);
 const tripService = new TripService(tripRepository, driverRepository, vehicleRepository);
 const authService = new AuthService();
+const maintenanceService = new MaintenanceService(maintenanceRepository, vehicleService);
+const expenseService = new ExpenseService(expenseRepository, vehicleService);
 let currentUser: User | null = null;
 
 // Track editing state
 let editingDriverId: string | null = null;
 let editingVehicleId: string | null = null;
-let activeTab: 'dashboard' | 'drivers' | 'trips' | 'vehicles' = 'dashboard';
+let activeTab: 'dashboard' | 'drivers' | 'trips' | 'vehicles' | 'maintenance' | 'expenses' | 'analytics' = 'dashboard';
 
 // --- DOM References ---
 
@@ -36,11 +44,17 @@ const navDashboard = document.getElementById('nav-dashboard') as HTMLAnchorEleme
 const navDrivers = document.getElementById('nav-drivers') as HTMLAnchorElement;
 const navTrips = document.getElementById('nav-trips') as HTMLAnchorElement;
 const navVehicles = document.getElementById('nav-vehicles') as HTMLAnchorElement;
+const navMaintenance = document.getElementById('nav-maintenance') as HTMLAnchorElement;
+const navExpenses = document.getElementById('nav-expenses') as HTMLAnchorElement;
+const navAnalytics = document.getElementById('nav-analytics') as HTMLAnchorElement;
 
 const dashboardTabContent = document.getElementById('dashboard-tab-content') as HTMLDivElement;
 const driversTabContent = document.getElementById('drivers-tab-content') as HTMLDivElement;
 const tripsTabContent = document.getElementById('trips-tab-content') as HTMLDivElement;
 const vehiclesTabContent = document.getElementById('vehicles-tab-content') as HTMLDivElement;
+const maintenanceTabContent = document.getElementById('maintenance-tab-content') as HTMLDivElement;
+const expensesTabContent = document.getElementById('expenses-tab-content') as HTMLDivElement;
+const analyticsTabContent = document.getElementById('analytics-tab-content') as HTMLDivElement;
 
 const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
 const mainSubtitle = document.getElementById('main-subtitle') as HTMLParagraphElement;
@@ -181,6 +195,56 @@ const currentOdometerLabel = document.getElementById('current-odometer-label') a
 const newOdometerInput = document.getElementById('new-odometer-input') as HTMLInputElement;
 const odometerCancelBtn = document.getElementById('odometer-cancel-btn') as HTMLButtonElement;
 const odometerModalCloseBtn = document.getElementById('odometer-modal-close-btn') as HTMLButtonElement;
+
+// Maintenance DOM References
+const maintenanceTableBody = document.getElementById('maintenance-table-body') as HTMLTableSectionElement;
+const searchMaintenanceInput = document.getElementById('search-maintenance-input') as HTMLInputElement;
+const statusMaintenanceFilter = document.getElementById('status-maintenance-filter') as HTMLSelectElement;
+const addMaintenanceBtn = document.getElementById('add-maintenance-btn') as HTMLButtonElement;
+const maintenanceModal = document.getElementById('maintenance-modal') as HTMLDivElement;
+const maintenanceForm = document.getElementById('maintenance-form') as HTMLFormElement;
+const maintenanceFormVehicle = document.getElementById('maintenance-form-vehicle') as HTMLSelectElement;
+const maintenanceFormType = document.getElementById('maintenance-form-type') as HTMLInputElement;
+const maintenanceFormCost = document.getElementById('maintenance-form-cost') as HTMLInputElement;
+const maintenanceFormDesc = document.getElementById('maintenance-form-desc') as HTMLTextAreaElement;
+const maintenanceFormStart = document.getElementById('maintenance-form-start') as HTMLInputElement;
+const maintenanceFormEnd = document.getElementById('maintenance-form-end') as HTMLInputElement;
+const maintenanceFormStatus = document.getElementById('maintenance-form-status') as HTMLSelectElement;
+const maintenanceFormCancel = document.getElementById('maintenance-form-cancel') as HTMLButtonElement;
+const maintenanceModalCloseBtn = document.getElementById('maintenance-modal-close-btn') as HTMLButtonElement;
+
+// Fuel DOM References
+const fuelTableBody = document.getElementById('fuel-table-body') as HTMLTableSectionElement;
+const addFuelBtn = document.getElementById('add-fuel-btn') as HTMLButtonElement;
+const fuelModal = document.getElementById('fuel-modal') as HTMLDivElement;
+const fuelForm = document.getElementById('fuel-form') as HTMLFormElement;
+const fuelFormVehicle = document.getElementById('fuel-form-vehicle') as HTMLSelectElement;
+const fuelFormLiters = document.getElementById('fuel-form-liters') as HTMLInputElement;
+const fuelFormCost = document.getElementById('fuel-form-cost') as HTMLInputElement;
+const fuelFormDistance = document.getElementById('fuel-form-distance') as HTMLInputElement;
+const fuelFormDate = document.getElementById('fuel-form-date') as HTMLInputElement;
+const fuelFormCancel = document.getElementById('fuel-form-cancel') as HTMLButtonElement;
+const fuelModalCloseBtn = document.getElementById('fuel-modal-close-btn') as HTMLButtonElement;
+
+// Expenses DOM References
+const expenseTableBody = document.getElementById('expense-table-body') as HTMLTableSectionElement;
+const addExpenseBtn = document.getElementById('add-expense-btn') as HTMLButtonElement;
+const expenseModal = document.getElementById('expense-modal') as HTMLDivElement;
+const expenseForm = document.getElementById('expense-form') as HTMLFormElement;
+const expenseFormVehicle = document.getElementById('expense-form-vehicle') as HTMLSelectElement;
+const expenseFormType = document.getElementById('expense-form-type') as HTMLSelectElement;
+const expenseFormAmount = document.getElementById('expense-form-amount') as HTMLInputElement;
+const expenseFormDate = document.getElementById('expense-form-date') as HTMLInputElement;
+const expenseFormCancel = document.getElementById('expense-form-cancel') as HTMLButtonElement;
+const expenseModalCloseBtn = document.getElementById('expense-modal-close-btn') as HTMLButtonElement;
+
+// Reports DOM References
+const analyticsTableBody = document.getElementById('analytics-table-body') as HTMLTableSectionElement;
+const searchAnalyticsInput = document.getElementById('search-analytics-input') as HTMLInputElement;
+const exportCsvBtn = document.getElementById('export-csv-btn') as HTMLButtonElement;
+const reportAvgEfficiency = document.getElementById('report-avg-efficiency') as HTMLHeadingElement;
+const reportTotalCost = document.getElementById('report-total-cost') as HTMLHeadingElement;
+const reportAvgRoi = document.getElementById('report-avg-roi') as HTMLHeadingElement;
 
 // Time display
 const currentTimeSpan = document.getElementById('current-time') as HTMLSpanElement;
@@ -346,6 +410,70 @@ async function seedMockData() {
       region: 'California',
     });
     await tripService.dispatchTrip(activeTrip.id);
+  }
+
+  // Seed Maintenance, Fuel logs, and general expenses
+  const trk1102 = allVehicles.find(v => v.registrationNumber === 'IL-TRK-1102');
+  if (trk1102) {
+    await maintenanceService.logMaintenance({
+      vehicleId: trk1102.id,
+      maintenanceType: 'Engine Overhaul',
+      description: 'Cylinder compression repair',
+      cost: 1500,
+      startDate: pastDate,
+      status: 'Active',
+    });
+  }
+
+  if (trk7711) {
+    await expenseService.logFuel({
+      vehicleId: trk7711.id,
+      liters: 150,
+      cost: 225,
+      distance: 1200,
+      date: pastDate,
+    });
+    await expenseService.logExpense({
+      vehicleId: trk7711.id,
+      expenseType: 'Toll',
+      amount: 45,
+      date: pastDate,
+    });
+  }
+
+  if (trk8840) {
+    await expenseService.logFuel({
+      vehicleId: trk8840.id,
+      liters: 120,
+      cost: 185,
+      distance: 980,
+      date: pastDate,
+    });
+  }
+
+  // Create a completed trip to demonstrate Revenue & ROI calculation
+  const clara = allDrivers.find(d => d.name === 'Clara Oswald');
+  const van5529 = allVehicles.find(v => v.registrationNumber === 'NY-VAN-5529');
+  if (clara && van5529) {
+    const completedTrip = await tripService.createTrip({
+      source: 'Brooklyn Warehouse A',
+      destination: 'Albany Distribution Hub',
+      driverId: clara.id,
+      vehicleId: van5529.id,
+      cargoWeight: 2000,
+      plannedDistance: 240,
+      region: 'New York',
+    });
+    await tripService.dispatchTrip(completedTrip.id);
+    await tripService.completeTrip(completedTrip.id);
+
+    await expenseService.logFuel({
+      vehicleId: van5529.id,
+      liters: 45,
+      cost: 70,
+      distance: 240,
+      date: pastDate,
+    });
   }
 }
 
@@ -1040,17 +1168,23 @@ function escapeHtml(str: string): string {
 }
 
 // --- Tab Switching Logic ---
-function switchTab(tab: 'dashboard' | 'drivers' | 'trips' | 'vehicles') {
+function switchTab(tab: 'dashboard' | 'drivers' | 'trips' | 'vehicles' | 'maintenance' | 'expenses' | 'analytics') {
   activeTab = tab;
   navDashboard.classList.remove('active');
   navDrivers.classList.remove('active');
   navTrips.classList.remove('active');
   navVehicles.classList.remove('active');
+  navMaintenance.classList.remove('active');
+  navExpenses.classList.remove('active');
+  navAnalytics.classList.remove('active');
 
   dashboardTabContent.classList.add('hidden');
   driversTabContent.classList.add('hidden');
   tripsTabContent.classList.add('hidden');
   vehiclesTabContent.classList.add('hidden');
+  maintenanceTabContent.classList.add('hidden');
+  expensesTabContent.classList.add('hidden');
+  analyticsTabContent.classList.add('hidden');
 
   if (tab === 'dashboard') {
     navDashboard.classList.add('active');
@@ -1072,6 +1206,24 @@ function switchTab(tab: 'dashboard' | 'drivers' | 'trips' | 'vehicles') {
     vehiclesTabContent.classList.remove('hidden');
     mainTitle.textContent = 'Fleet Management Registry';
     mainSubtitle.textContent = 'Track vehicle specifications, odometers, acquisition costs, and maintenance statuses.';
+  } else if (tab === 'maintenance') {
+    navMaintenance.classList.add('active');
+    maintenanceTabContent.classList.remove('hidden');
+    mainTitle.textContent = 'Vehicle Maintenance Hub';
+    mainSubtitle.textContent = 'Track maintenance logs, schedule shop sessions, and update repair details.';
+    renderMaintenanceView();
+  } else if (tab === 'expenses') {
+    navExpenses.classList.add('active');
+    expensesTabContent.classList.remove('hidden');
+    mainTitle.textContent = 'Fuel & Operations Expenses';
+    mainSubtitle.textContent = 'Track fuel volumes, fill-up costs, tolls, insurance, and overall vehicle outlays.';
+    renderExpensesView();
+  } else if (tab === 'analytics') {
+    navAnalytics.classList.add('active');
+    analyticsTabContent.classList.remove('hidden');
+    mainTitle.textContent = 'Analytics Reports & ROI';
+    mainSubtitle.textContent = 'Review fuel efficiencies, total operating outlays, completed trip revenues, and vehicle investment yields.';
+    renderAnalyticsView();
   }
   lucide.createIcons();
 }
@@ -1080,6 +1232,9 @@ navDashboard.addEventListener('click', (e) => { e.preventDefault(); switchTab('d
 navDrivers.addEventListener('click', (e) => { e.preventDefault(); switchTab('drivers'); });
 navTrips.addEventListener('click', (e) => { e.preventDefault(); switchTab('trips'); });
 navVehicles.addEventListener('click', (e) => { e.preventDefault(); switchTab('vehicles'); });
+navMaintenance.addEventListener('click', (e) => { e.preventDefault(); switchTab('maintenance'); });
+navExpenses.addEventListener('click', (e) => { e.preventDefault(); switchTab('expenses'); });
+navAnalytics.addEventListener('click', (e) => { e.preventDefault(); switchTab('analytics'); });
 
 // --- Modal Helper Functions (Drivers) ---
 function openAddModal() {
@@ -1681,27 +1836,51 @@ function applyRbacRules() {
   document.getElementById('add-driver-btn')?.classList.remove('rbac-hidden');
   document.getElementById('add-vehicle-btn')?.classList.remove('rbac-hidden');
   document.getElementById('add-trip-btn')?.classList.remove('rbac-hidden');
+  document.getElementById('add-maintenance-btn')?.classList.remove('rbac-hidden');
+  document.getElementById('add-fuel-btn')?.classList.remove('rbac-hidden');
+  document.getElementById('add-expense-btn')?.classList.remove('rbac-hidden');
 
   navDrivers.classList.remove('rbac-hidden');
   navTrips.classList.remove('rbac-hidden');
   navVehicles.classList.remove('rbac-hidden');
+  navMaintenance.classList.remove('rbac-hidden');
+  navExpenses.classList.remove('rbac-hidden');
+  navAnalytics.classList.remove('rbac-hidden');
 
   if (currentUser.role === UserRole.Viewer) {
     document.getElementById('add-driver-btn')?.classList.add('rbac-hidden');
     document.getElementById('add-vehicle-btn')?.classList.add('rbac-hidden');
     document.getElementById('add-trip-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-maintenance-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-fuel-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-expense-btn')?.classList.add('rbac-hidden');
   } else if (currentUser.role === UserRole.Dispatcher) {
     document.getElementById('add-driver-btn')?.classList.add('rbac-hidden');
     document.getElementById('add-vehicle-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-maintenance-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-fuel-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-expense-btn')?.classList.add('rbac-hidden');
+
+    navMaintenance.classList.add('rbac-hidden');
+    navExpenses.classList.add('rbac-hidden');
+    navAnalytics.classList.add('rbac-hidden');
+
+    if (activeTab === 'maintenance' || activeTab === 'expenses' || activeTab === 'analytics') {
+      switchTab('dashboard');
+    }
   } else if (currentUser.role === UserRole.Maintenance) {
     document.getElementById('add-driver-btn')?.classList.add('rbac-hidden');
     document.getElementById('add-vehicle-btn')?.classList.add('rbac-hidden');
     document.getElementById('add-trip-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-fuel-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-expense-btn')?.classList.add('rbac-hidden');
 
     navDrivers.classList.add('rbac-hidden');
     navTrips.classList.add('rbac-hidden');
+    navExpenses.classList.add('rbac-hidden');
+    navAnalytics.classList.add('rbac-hidden');
     
-    if (activeTab === 'drivers' || activeTab === 'trips') {
+    if (activeTab === 'drivers' || activeTab === 'trips' || activeTab === 'expenses' || activeTab === 'analytics') {
       switchTab('dashboard');
     }
   }
@@ -1774,6 +1953,613 @@ function initAuthListeners() {
   });
 }
 
+// --- Populate Vehicle Dropdown Selects ---
+async function populateVehicleSelects() {
+  const vehicles = await vehicleService.getAllVehicles();
+  const activeVehicles = vehicles.filter((v: Vehicle) => v.status !== VehicleStatus.Retired);
+
+  // Clear & populate selects
+  maintenanceFormVehicle.innerHTML = '<option value="">Select Vehicle</option>';
+  fuelFormVehicle.innerHTML = '<option value="">Select Vehicle</option>';
+  expenseFormVehicle.innerHTML = '<option value="">Select Vehicle</option>';
+
+  activeVehicles.forEach((v: Vehicle) => {
+    const optText = `${v.nameModel} (${v.registrationNumber})`;
+    
+    const opt1 = document.createElement('option');
+    opt1.value = v.id;
+    opt1.textContent = optText;
+    maintenanceFormVehicle.appendChild(opt1);
+
+    const opt2 = document.createElement('option');
+    opt2.value = v.id;
+    opt2.textContent = optText;
+    fuelFormVehicle.appendChild(opt2);
+
+    const opt3 = document.createElement('option');
+    opt3.value = v.id;
+    opt3.textContent = optText;
+    expenseFormVehicle.appendChild(opt3);
+  });
+}
+
+// --- Render Maintenance View ---
+async function renderMaintenanceView() {
+  maintenanceTableBody.innerHTML = '';
+  const searchVal = searchMaintenanceInput.value.toLowerCase().trim();
+  const statusFilterVal = statusMaintenanceFilter.value;
+
+  const logs = await maintenanceService.listMaintenanceRecords();
+  const vehicles = await vehicleService.getAllVehicles();
+  const vehicleMap = new Map<string, Vehicle>(vehicles.map((v: Vehicle) => [v.id, v]));
+
+  const filtered = logs.filter(log => {
+    const vehicle = vehicleMap.get(log.vehicleId);
+    if (!vehicle) return false;
+
+    const matchesSearch = vehicle.registrationNumber.toLowerCase().includes(searchVal) ||
+                          vehicle.nameModel.toLowerCase().includes(searchVal) ||
+                          log.maintenanceType.toLowerCase().includes(searchVal);
+    
+    const matchesStatus = statusFilterVal === 'ALL' || log.status === statusFilterVal;
+
+    return matchesSearch && matchesStatus;
+  });
+
+  if (filtered.length === 0) {
+    maintenanceTableBody.innerHTML = `
+      <tr class="empty-state-row">
+        <td colspan="8">
+          <div class="empty-state">
+            <i data-lucide="wrench"></i>
+            <span>No matching maintenance logs found.</span>
+          </div>
+        </td>
+      </tr>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  filtered.forEach(log => {
+    const vehicle = vehicleMap.get(log.vehicleId)!;
+    const row = document.createElement('tr');
+
+    const statusClass = log.status === 'Active' ? 'ontrip' : 'available';
+    const endDateStr = log.endDate ? new Date(log.endDate).toLocaleDateString() : '—';
+    const startDateStr = new Date(log.startDate).toLocaleDateString();
+
+    const isMaintRoleOrAdmin = currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Maintenance);
+
+    row.innerHTML = `
+      <td>
+        <div class="driver-name-cell">
+          <div class="driver-initials"><i data-lucide="truck" style="width: 14px; height: 14px;"></i></div>
+          <div class="driver-meta">
+            <span class="driver-fullname">${escapeHtml(vehicle.nameModel)}</span>
+            <span class="driver-id-sub">Reg: ${escapeHtml(vehicle.registrationNumber)} | ${escapeHtml(vehicle.region)}</span>
+          </div>
+        </div>
+      </td>
+      <td><strong>${escapeHtml(log.maintenanceType)}</strong></td>
+      <td><span class="route-subtext">${escapeHtml(log.description || 'No description')}</span></td>
+      <td><strong>$${log.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong></td>
+      <td>${startDateStr}</td>
+      <td>${endDateStr}</td>
+      <td>
+        <span class="status-badge ${statusClass}">
+          <span class="status-dot"></span>
+          <span>${log.status}</span>
+        </span>
+      </td>
+      <td>
+        <div class="actions-cell">
+          ${log.status === 'Active' ? `
+            <button class="btn btn-secondary btn-icon complete-maint-btn ${isMaintRoleOrAdmin ? '' : 'rbac-blocked'}" 
+                    title="${isMaintRoleOrAdmin ? 'Mark Completed' : 'Completing maintenance requires Maintenance or Admin role'}" 
+                    data-id="${log.id}"
+                    ${isMaintRoleOrAdmin ? '' : 'disabled'}>
+              <i data-lucide="check-square"></i>
+            </button>
+          ` : `
+            <span class="route-subtext">—</span>
+          `}
+        </div>
+      </td>
+    `;
+    maintenanceTableBody.appendChild(row);
+  });
+
+  document.querySelectorAll('.complete-maint-btn').forEach(btn => {
+    btn.addEventListener('click', async (e) => {
+      const id = (e.currentTarget as HTMLButtonElement).getAttribute('data-id');
+      if (id) {
+        try {
+          await maintenanceService.completeMaintenance(id, new Date());
+          renderMaintenanceView();
+        } catch (err: any) {
+          alert(`Failed to complete maintenance: ${err.message}`);
+        }
+      }
+    });
+  });
+
+  lucide.createIcons();
+}
+
+// --- Render Expenses View ---
+async function renderExpensesView() {
+  fuelTableBody.innerHTML = '';
+  expenseTableBody.innerHTML = '';
+
+  const fuelLogs = await expenseService.listFuelLogs();
+  const expenses = await expenseService.listExpenses();
+  const vehicles = await vehicleService.getAllVehicles();
+  const vehicleMap = new Map<string, Vehicle>(vehicles.map((v: Vehicle) => [v.id, v]));
+
+  fuelLogs.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  expenses.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+
+  if (fuelLogs.length === 0) {
+    fuelTableBody.innerHTML = `
+      <tr class="empty-state-row">
+        <td colspan="5">
+          <div class="empty-state small-empty-state">
+            <i data-lucide="fuel"></i>
+            <span>No fuel logs recorded.</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  } else {
+    fuelLogs.forEach(log => {
+      const vehicle = vehicleMap.get(log.vehicleId);
+      const reg = vehicle ? vehicle.registrationNumber : 'Unknown';
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><strong>${escapeHtml(reg)}</strong></td>
+        <td>${log.liters.toFixed(1)} L</td>
+        <td><strong>$${log.cost.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong></td>
+        <td>${log.distance} km</td>
+        <td>${new Date(log.date).toLocaleDateString()}</td>
+      `;
+      fuelTableBody.appendChild(row);
+    });
+  }
+
+  if (expenses.length === 0) {
+    expenseTableBody.innerHTML = `
+      <tr class="empty-state-row">
+        <td colspan="4">
+          <div class="empty-state small-empty-state">
+            <i data-lucide="receipt"></i>
+            <span>No expenses recorded.</span>
+          </div>
+        </td>
+      </tr>
+    `;
+  } else {
+    expenses.forEach(exp => {
+      const vehicle = vehicleMap.get(exp.vehicleId);
+      const reg = vehicle ? vehicle.registrationNumber : 'Unknown';
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td><strong>${escapeHtml(reg)}</strong></td>
+        <td><span class="license-category-badge">${exp.expenseType}</span></td>
+        <td><strong>$${exp.amount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</strong></td>
+        <td>${new Date(exp.date).toLocaleDateString()}</td>
+      `;
+      expenseTableBody.appendChild(row);
+    });
+  }
+
+  lucide.createIcons();
+}
+
+// --- Render Analytics View ---
+async function renderAnalyticsView() {
+  analyticsTableBody.innerHTML = '';
+  const searchVal = searchAnalyticsInput.value.toLowerCase().trim();
+
+  const vehicles = await vehicleService.getAllVehicles();
+  const trips = await tripService.getAllTrips();
+  const fuelLogs = await expenseService.listFuelLogs();
+  const expenses = await expenseService.listExpenses();
+  const maintenanceLogs = await maintenanceService.listMaintenanceRecords();
+
+  let grandTotalDistance = 0;
+  let grandTotalLiters = 0;
+  let grandTotalOpsCost = 0;
+  let roiSum = 0;
+  let roiCount = 0;
+
+  const reportData = vehicles.map((vehicle: Vehicle) => {
+    const vehicleFuel = fuelLogs.filter(f => f.vehicleId === vehicle.id);
+    const totalFuelLiters = vehicleFuel.reduce((sum: number, f) => sum + f.liters, 0);
+    const totalFuelCost = vehicleFuel.reduce((sum: number, f) => sum + f.cost, 0);
+    const totalFuelDistance = vehicleFuel.reduce((sum: number, f) => sum + f.distance, 0);
+
+    const fuelEfficiency = totalFuelLiters === 0 ? 0 : totalFuelDistance / totalFuelLiters;
+
+    const vehicleMaint = maintenanceLogs.filter(m => m.vehicleId === vehicle.id);
+    const totalMaintCost = vehicleMaint.reduce((sum: number, m) => sum + m.cost, 0);
+
+    const vehicleExpenses = expenses.filter(e => e.vehicleId === vehicle.id);
+    const totalOtherCost = vehicleExpenses.reduce((sum: number, e) => sum + e.amount, 0);
+
+    const totalOpsCost = totalFuelCost + totalMaintCost + totalOtherCost;
+
+    const vehicleTrips = trips.filter(t => t.vehicleId === vehicle.id && t.status === TripStatus.Completed);
+    const totalRevenue = vehicleTrips.reduce((sum: number, t: Trip) => {
+      const tripRev = t.plannedDistance * 2.50 + t.cargoWeight * 0.15;
+      return sum + tripRev;
+    }, 0);
+
+    const roi = ((totalRevenue - totalOpsCost) / vehicle.acquisitionCost) * 100;
+
+    grandTotalDistance += totalFuelDistance;
+    grandTotalLiters += totalFuelLiters;
+    grandTotalOpsCost += totalOpsCost;
+
+    if (!isNaN(roi)) {
+      roiSum += roi;
+      roiCount++;
+    }
+
+    return {
+      vehicle,
+      fuelEfficiency,
+      totalFuelCost,
+      totalMaintCost,
+      totalOtherCost,
+      totalOpsCost,
+      totalRevenue,
+      roi,
+    };
+  });
+
+  const globalEfficiency = grandTotalLiters === 0 ? 0 : grandTotalDistance / grandTotalLiters;
+  const globalAvgRoi = roiCount === 0 ? 0 : roiSum / roiCount;
+
+  reportAvgEfficiency.textContent = `${globalEfficiency.toFixed(1)} km/L`;
+  reportTotalCost.textContent = `$${grandTotalOpsCost.toLocaleString(undefined, { minimumFractionDigits: 2 })}`;
+  reportAvgRoi.textContent = `${globalAvgRoi.toFixed(1)}%`;
+
+  const filteredReport = reportData.filter((item: any) => {
+    return item.vehicle.registrationNumber.toLowerCase().includes(searchVal) ||
+           item.vehicle.nameModel.toLowerCase().includes(searchVal);
+  });
+
+  if (filteredReport.length === 0) {
+    analyticsTableBody.innerHTML = `
+      <tr class="empty-state-row">
+        <td colspan="9">
+          <div class="empty-state">
+            <i data-lucide="bar-chart-2"></i>
+            <span>No matching vehicle reports found.</span>
+          </div>
+        </td>
+      </tr>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  filteredReport.forEach((item: any) => {
+    const row = document.createElement('tr');
+    
+    let roiClass = '';
+    if (item.roi > 10) roiClass = 'score-excellent';
+    else if (item.roi < 0) roiClass = 'score-critical';
+
+    row.innerHTML = `
+      <td>
+        <div class="driver-name-cell">
+          <div class="driver-initials"><i data-lucide="truck" style="width: 14px; height: 14px;"></i></div>
+          <div class="driver-meta">
+            <span class="driver-fullname">${escapeHtml(item.vehicle.nameModel)}</span>
+            <span class="driver-id-sub">Reg: ${escapeHtml(item.vehicle.registrationNumber)}</span>
+          </div>
+        </div>
+      </td>
+      <td>$${item.vehicle.acquisitionCost.toLocaleString()}</td>
+      <td>${item.fuelEfficiency === 0 ? '—' : `${item.fuelEfficiency.toFixed(1)} km/L`}</td>
+      <td>$${item.totalFuelCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+      <td>$${item.totalMaintCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+      <td>$${item.totalOtherCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+      <td><strong>$${item.totalOpsCost.toLocaleString(undefined, { maximumFractionDigits: 0 })}</strong></td>
+      <td>$${item.totalRevenue.toLocaleString(undefined, { maximumFractionDigits: 0 })}</td>
+      <td>
+        <span class="score-number ${roiClass}" style="font-weight: 700;">
+          ${item.roi >= 0 ? '+' : ''}${item.roi.toFixed(1)}%
+        </span>
+      </td>
+    `;
+    analyticsTableBody.appendChild(row);
+  });
+
+  lucide.createIcons();
+}
+
+// --- Maintenance Modals ---
+function openMaintenanceModal() {
+  maintenanceForm.reset();
+  (document.getElementById('error-maintenance-vehicle') as HTMLElement).textContent = '';
+  (document.getElementById('error-maintenance-type') as HTMLElement).textContent = '';
+  (document.getElementById('error-maintenance-cost') as HTMLElement).textContent = '';
+  (document.getElementById('error-maintenance-start') as HTMLElement).textContent = '';
+  
+  maintenanceFormStart.valueAsDate = new Date();
+  populateVehicleSelects();
+  maintenanceModal.classList.remove('hidden');
+}
+
+function closeMaintenanceModal() {
+  maintenanceModal.classList.add('hidden');
+}
+
+// --- Fuel Modals ---
+function openFuelModal() {
+  fuelForm.reset();
+  (document.getElementById('error-fuel-vehicle') as HTMLElement).textContent = '';
+  (document.getElementById('error-fuel-liters') as HTMLElement).textContent = '';
+  (document.getElementById('error-fuel-cost') as HTMLElement).textContent = '';
+  (document.getElementById('error-fuel-distance') as HTMLElement).textContent = '';
+  (document.getElementById('error-fuel-date') as HTMLElement).textContent = '';
+  
+  fuelFormDate.valueAsDate = new Date();
+  populateVehicleSelects();
+  fuelModal.classList.remove('hidden');
+}
+
+function closeFuelModal() {
+  fuelModal.classList.add('hidden');
+}
+
+// --- Expense Modals ---
+function openExpenseModal() {
+  expenseForm.reset();
+  (document.getElementById('error-expense-vehicle') as HTMLElement).textContent = '';
+  (document.getElementById('error-expense-amount') as HTMLElement).textContent = '';
+  (document.getElementById('error-expense-date') as HTMLElement).textContent = '';
+  
+  expenseFormDate.valueAsDate = new Date();
+  populateVehicleSelects();
+  expenseModal.classList.remove('hidden');
+}
+
+function closeExpenseModal() {
+  expenseModal.classList.add('hidden');
+}
+
+// --- Submit Actions ---
+async function handleMaintenanceSubmit(e: Event) {
+  e.preventDefault();
+  
+  const vehicleId = maintenanceFormVehicle.value;
+  const maintenanceType = maintenanceFormType.value;
+  const cost = parseFloat(maintenanceFormCost.value);
+  const description = maintenanceFormDesc.value;
+  const startDate = new Date(maintenanceFormStart.value);
+  const status = maintenanceFormStatus.value as 'Active' | 'Completed';
+  
+  let valid = true;
+  if (!vehicleId) {
+    (document.getElementById('error-maintenance-vehicle') as HTMLElement).textContent = 'Vehicle is required.';
+    valid = false;
+  }
+  if (!maintenanceType.trim()) {
+    (document.getElementById('error-maintenance-type') as HTMLElement).textContent = 'Type is required.';
+    valid = false;
+  }
+  if (isNaN(cost) || cost < 0) {
+    (document.getElementById('error-maintenance-cost') as HTMLElement).textContent = 'Cost must be non-negative.';
+    valid = false;
+  }
+  if (!maintenanceFormStart.value) {
+    (document.getElementById('error-maintenance-start') as HTMLElement).textContent = 'Start date is required.';
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  try {
+    const endVal = maintenanceFormEnd.value ? new Date(maintenanceFormEnd.value) : undefined;
+    
+    await maintenanceService.logMaintenance({
+      vehicleId,
+      maintenanceType,
+      cost,
+      description,
+      startDate,
+      endDate: endVal,
+      status,
+    });
+
+    await expenseService.logExpense({
+      vehicleId,
+      expenseType: 'Maintenance',
+      amount: cost,
+      date: startDate,
+    });
+
+    closeMaintenanceModal();
+    renderMaintenanceView();
+  } catch (err: any) {
+    alert(`Failed to save log: ${err.message}`);
+  }
+}
+
+async function handleFuelSubmit(e: Event) {
+  e.preventDefault();
+  
+  const vehicleId = fuelFormVehicle.value;
+  const liters = parseFloat(fuelFormLiters.value);
+  const cost = parseFloat(fuelFormCost.value);
+  const distance = parseFloat(fuelFormDistance.value);
+  const date = new Date(fuelFormDate.value);
+
+  let valid = true;
+  if (!vehicleId) {
+    (document.getElementById('error-fuel-vehicle') as HTMLElement).textContent = 'Vehicle is required.';
+    valid = false;
+  }
+  if (isNaN(liters) || liters <= 0) {
+    (document.getElementById('error-fuel-liters') as HTMLElement).textContent = 'Liters must be positive.';
+    valid = false;
+  }
+  if (isNaN(cost) || cost <= 0) {
+    (document.getElementById('error-fuel-cost') as HTMLElement).textContent = 'Cost must be positive.';
+    valid = false;
+  }
+  if (isNaN(distance) || distance < 0) {
+    (document.getElementById('error-fuel-distance') as HTMLElement).textContent = 'Distance must be non-negative.';
+    valid = false;
+  }
+  if (!fuelFormDate.value) {
+    (document.getElementById('error-fuel-date') as HTMLElement).textContent = 'Date is required.';
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  try {
+    await expenseService.logFuel({
+      vehicleId,
+      liters,
+      cost,
+      distance,
+      date,
+    });
+    closeFuelModal();
+    renderExpensesView();
+  } catch (err: any) {
+    alert(`Failed to save fuel log: ${err.message}`);
+  }
+}
+
+async function handleExpenseSubmit(e: Event) {
+  e.preventDefault();
+  
+  const vehicleId = expenseFormVehicle.value;
+  const expenseType = expenseFormType.value as 'Toll' | 'Maintenance' | 'Insurance' | 'Other';
+  const amount = parseFloat(expenseFormAmount.value);
+  const date = new Date(expenseFormDate.value);
+
+  let valid = true;
+  if (!vehicleId) {
+    (document.getElementById('error-expense-vehicle') as HTMLElement).textContent = 'Vehicle is required.';
+    valid = false;
+  }
+  if (isNaN(amount) || amount <= 0) {
+    (document.getElementById('error-expense-amount') as HTMLElement).textContent = 'Amount must be positive.';
+    valid = false;
+  }
+  if (!expenseFormDate.value) {
+    (document.getElementById('error-expense-date') as HTMLElement).textContent = 'Date is required.';
+    valid = false;
+  }
+
+  if (!valid) return;
+
+  try {
+    await expenseService.logExpense({
+      vehicleId,
+      expenseType,
+      amount,
+      date,
+    });
+    closeExpenseModal();
+    renderExpensesView();
+  } catch (err: any) {
+    alert(`Failed to save expense: ${err.message}`);
+  }
+}
+
+// --- Export CSV function ---
+async function handleExportCsv() {
+  const vehicles = await vehicleService.getAllVehicles();
+  const trips = await tripService.getAllTrips();
+  const fuelLogs = await expenseService.listFuelLogs();
+  const expenses = await expenseService.listExpenses();
+  const maintenanceLogs = await maintenanceService.listMaintenanceRecords();
+
+  let csvContent = 'Vehicle Model,Registration,Region,Acquisition Cost ($),Fuel Efficiency (km/L),Fuel Cost ($),Maint Cost ($),Other Expenses ($),Total Ops Cost ($),Est Revenue ($),ROI (%)\\n';
+
+  vehicles.forEach((vehicle: Vehicle) => {
+    const vehicleFuel = fuelLogs.filter(f => f.vehicleId === vehicle.id);
+    const totalFuelLiters = vehicleFuel.reduce((sum: number, f) => sum + f.liters, 0);
+    const totalFuelCost = vehicleFuel.reduce((sum: number, f) => sum + f.cost, 0);
+    const totalFuelDistance = vehicleFuel.reduce((sum: number, f) => sum + f.distance, 0);
+    const fuelEfficiency = totalFuelLiters === 0 ? 0 : totalFuelDistance / totalFuelLiters;
+
+    const vehicleMaint = maintenanceLogs.filter(m => m.vehicleId === vehicle.id);
+    const totalMaintCost = vehicleMaint.reduce((sum: number, m) => sum + m.cost, 0);
+
+    const vehicleExpenses = expenses.filter(e => e.vehicleId === vehicle.id);
+    const totalOtherCost = vehicleExpenses.reduce((sum: number, e) => sum + e.amount, 0);
+    const totalOpsCost = totalFuelCost + totalMaintCost + totalOtherCost;
+
+    const vehicleTrips = trips.filter(t => t.vehicleId === vehicle.id && t.status === TripStatus.Completed);
+    const totalRevenue = vehicleTrips.reduce((sum: number, t: Trip) => sum + (t.plannedDistance * 2.50 + t.cargoWeight * 0.15), 0);
+
+    const roi = ((totalRevenue - totalOpsCost) / vehicle.acquisitionCost) * 100;
+    const roiStr = isNaN(roi) ? '—' : `${roi.toFixed(1)}%`;
+
+    const row = [
+      `"${vehicle.nameModel}"`,
+      `"${vehicle.registrationNumber}"`,
+      `"${vehicle.region}"`,
+      vehicle.acquisitionCost,
+      fuelEfficiency === 0 ? '—' : fuelEfficiency.toFixed(2),
+      totalFuelCost,
+      totalMaintCost,
+      totalOtherCost,
+      totalOpsCost,
+      totalRevenue,
+      roiStr,
+    ].join(',');
+
+    csvContent += row + '\\n';
+  });
+
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.setAttribute('href', url);
+  link.setAttribute('download', `fleet_ops_analytics_\${new Date().toISOString().substring(0, 10)}.csv`);
+  link.style.visibility = 'hidden';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}
+
+// --- Initialise Maintenance & Expenses Event Listeners ---
+function initMaintenanceAndExpensesListeners() {
+  addMaintenanceBtn.addEventListener('click', openMaintenanceModal);
+  addFuelBtn.addEventListener('click', openFuelModal);
+  addExpenseBtn.addEventListener('click', openExpenseModal);
+
+  maintenanceFormCancel.addEventListener('click', closeMaintenanceModal);
+  maintenanceModalCloseBtn.addEventListener('click', closeMaintenanceModal);
+
+  fuelFormCancel.addEventListener('click', closeFuelModal);
+  fuelModalCloseBtn.addEventListener('click', closeFuelModal);
+
+  expenseFormCancel.addEventListener('click', closeExpenseModal);
+  expenseModalCloseBtn.addEventListener('click', closeExpenseModal);
+
+  maintenanceForm.addEventListener('submit', handleMaintenanceSubmit);
+  fuelForm.addEventListener('submit', handleFuelSubmit);
+  expenseForm.addEventListener('submit', handleExpenseSubmit);
+
+  searchMaintenanceInput.addEventListener('input', renderMaintenanceView);
+  statusMaintenanceFilter.addEventListener('change', renderMaintenanceView);
+  searchAnalyticsInput.addEventListener('input', renderAnalyticsView);
+
+  exportCsvBtn.addEventListener('click', handleExportCsv);
+}
+
 function checkSession() {
   const stored = sessionStorage.getItem('transit_ops_user');
   if (stored) {
@@ -1800,6 +2586,7 @@ function checkSession() {
 (async () => {
   await seedMockData();
   initAuthListeners();
+  initMaintenanceAndExpensesListeners();
   checkSession();
   switchTab('dashboard'); // Start on overview dashboard tab
 })();

@@ -40,13 +40,17 @@
           <i data-lucide="truck"></i>
           <span>Vehicles</span>
         </a>
-        <a href="#" class="nav-item disabled" title="Coming Soon">
-          <i data-lucide="map"></i>
-          <span>Routes</span>
+        <a href="#" id="nav-maintenance" class="nav-item">
+          <i data-lucide="wrench"></i>
+          <span>Maintenance</span>
         </a>
-        <a href="#" class="nav-item disabled" title="Coming Soon">
-          <i data-lucide="calendar"></i>
-          <span>Schedules</span>
+        <a href="#" id="nav-expenses" class="nav-item">
+          <i data-lucide="dollar-sign"></i>
+          <span>Expenses & Fuel</span>
+        </a>
+        <a href="#" id="nav-analytics" class="nav-item">
+          <i data-lucide="bar-chart-2"></i>
+          <span>Reports & ROI</span>
         </a>
       </nav>
       <div class="sidebar-footer">
@@ -566,6 +570,215 @@
             </table>
           </div>
         </section>
+      </div>
+
+      <!-- MAINTENANCE TAB CONTENT -->
+      <div id="maintenance-tab-content" class="tab-content hidden">
+        <!-- Maintenance Top Actions -->
+        <section class="table-controls">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="search-maintenance-input" placeholder="Search maintenance logs...">
+          </div>
+          <div class="filters-row">
+            <div class="filter-group">
+              <div class="select-wrapper">
+                <i data-lucide="filter" class="select-icon"></i>
+                <select id="status-maintenance-filter">
+                  <option value="ALL">All Statuses</option>
+                  <option value="Active">Active</option>
+                  <option value="Completed">Completed</option>
+                </select>
+              </div>
+            </div>
+            <button id="add-maintenance-btn" class="btn btn-primary btn-with-icon">
+              <i data-lucide="plus"></i>
+              <span>Log Maintenance</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Maintenance Table -->
+        <section class="table-container-glass">
+          <div class="table-scroll-area">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Vehicle Details</th>
+                  <th>Maintenance Type</th>
+                  <th>Description</th>
+                  <th>Cost</th>
+                  <th>Start Date</th>
+                  <th>End Date</th>
+                  <th>Status</th>
+                  <th class="actions-header">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="maintenance-table-body">
+                <tr class="empty-state-row">
+                  <td colspan="8">
+                    <div class="empty-state">
+                      <i data-lucide="wrench"></i>
+                      <span>No maintenance logs recorded.</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- EXPENSES TAB CONTENT -->
+      <div id="expenses-tab-content" class="tab-content hidden">
+        <div class="dashboard-split-layout dashboard-split-layout-equal">
+          <!-- Left: Fuel Logs -->
+          <div class="table-container-glass split-pane-card">
+            <div class="split-header-container">
+              <h3 class="split-pane-title">Fuel Logs</h3>
+              <button id="add-fuel-btn" class="btn btn-primary btn-with-icon small-action-btn">
+                <i data-lucide="plus"></i>
+                <span>Log Fuel</span>
+              </button>
+            </div>
+            <div class="table-scroll-area scroll-container-medium">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Vehicle</th>
+                    <th>Liters</th>
+                    <th>Cost</th>
+                    <th>Distance</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="fuel-table-body">
+                  <tr class="empty-state-row">
+                    <td colspan="5">
+                      <div class="empty-state small-empty-state">
+                        <i data-lucide="fuel"></i>
+                        <span>No fuel logs recorded.</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Right: General Expenses -->
+          <div class="table-container-glass split-pane-card">
+            <div class="split-header-container">
+              <h3 class="split-pane-title">Other Expenses</h3>
+              <button id="add-expense-btn" class="btn btn-primary btn-with-icon small-action-btn">
+                <i data-lucide="plus"></i>
+                <span>Log Expense</span>
+              </button>
+            </div>
+            <div class="table-scroll-area scroll-container-medium">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Vehicle</th>
+                    <th>Type</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                  </tr>
+                </thead>
+                <tbody id="expense-table-body">
+                  <tr class="empty-state-row">
+                    <td colspan="4">
+                      <div class="empty-state small-empty-state">
+                        <i data-lucide="receipt"></i>
+                        <span>No expenses recorded.</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ANALYTICS TAB CONTENT -->
+      <div id="analytics-tab-content" class="tab-content hidden">
+        <!-- Summary Stats Card Row -->
+        <section class="metrics-grid dashboard-metrics-grid">
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Avg Fuel Efficiency</span>
+              <h2 id="report-avg-efficiency">0.0 km/L</h2>
+            </div>
+            <div class="metric-icon-wrapper label-available">
+              <i data-lucide="fuel"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Total Operational Cost</span>
+              <h2 id="report-total-cost">$0.00</h2>
+            </div>
+            <div class="metric-icon-wrapper label-expiring">
+              <i data-lucide="dollar-sign"></i>
+            </div>
+          </div>
+          <div class="metric-card glow-card">
+            <div class="metric-info">
+              <span class="metric-label">Average Fleet ROI</span>
+              <h2 id="report-avg-roi">0.0%</h2>
+            </div>
+            <div class="metric-icon-wrapper label-valid">
+              <i data-lucide="trending-up"></i>
+            </div>
+          </div>
+        </section>
+
+        <!-- Analytics Controls -->
+        <section class="table-controls">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="search-analytics-input" placeholder="Filter reports by vehicle registration...">
+          </div>
+          <div class="filters-row">
+            <button id="export-csv-btn" class="btn btn-secondary btn-with-icon">
+              <i data-lucide="download"></i>
+              <span>Export CSV</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Reports Table -->
+        <section class="table-container-glass">
+          <div class="table-scroll-area">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Vehicle Details</th>
+                  <th>Acquisition Cost</th>
+                  <th>Fuel Efficiency</th>
+                  <th>Fuel Cost</th>
+                  <th>Maint. Cost</th>
+                  <th>Other Expenses</th>
+                  <th>Total Ops Cost</th>
+                  <th>Est. Revenue</th>
+                  <th>ROI %</th>
+                </tr>
+              </thead>
+              <tbody id="analytics-table-body">
+                <tr class="empty-state-row">
+                  <td colspan="9">
+                    <div class="empty-state">
+                      <i data-lucide="bar-chart-2"></i>
+                      <span>No vehicle metrics calculated.</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
     </main>
   </div>
 
@@ -888,6 +1101,192 @@
         <div class="modal-footer">
           <button type="button" id="odometer-cancel-btn" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary">Update Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Form Modal (Log Maintenance) -->
+  <div id="maintenance-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="maintenance-modal-title">Log Vehicle Maintenance</h3>
+        <button id="maintenance-modal-close-btn" class="modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="maintenance-form" class="modal-form" novalidate>
+        <input type="hidden" id="form-maintenance-id">
+        
+        <div class="form-field">
+          <label for="maintenance-form-vehicle">Vehicle *</label>
+          <div class="select-wrapper">
+            <i data-lucide="truck" class="select-icon"></i>
+            <select id="maintenance-form-vehicle" required>
+              <option value="">Select Vehicle</option>
+            </select>
+          </div>
+          <span class="field-error" id="error-maintenance-vehicle"></span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="maintenance-form-type">Maintenance Type *</label>
+            <input type="text" id="maintenance-form-type" placeholder="e.g. Brake Replacement" required>
+            <span class="field-error" id="error-maintenance-type"></span>
+          </div>
+          
+          <div class="form-field">
+            <label for="maintenance-form-cost">Cost ($) *</label>
+            <input type="number" id="maintenance-form-cost" placeholder="0.00" min="0" required>
+            <span class="field-error" id="error-maintenance-cost"></span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="maintenance-form-desc">Description</label>
+          <textarea id="maintenance-form-desc" placeholder="Details of the maintenance activity..." rows="3"></textarea>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="maintenance-form-start">Start Date *</label>
+            <input type="date" id="maintenance-form-start" required>
+            <span class="field-error" id="error-maintenance-start"></span>
+          </div>
+          
+          <div class="form-field">
+            <label for="maintenance-form-end">End Date</label>
+            <input type="date" id="maintenance-form-end">
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="maintenance-form-status">Status *</label>
+          <div class="select-wrapper">
+            <i data-lucide="info" class="select-icon"></i>
+            <select id="maintenance-form-status" required>
+              <option value="Active">Active (In Shop)</option>
+              <option value="Completed">Completed (Available)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="maintenance-form-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Form Modal (Log Fuel) -->
+  <div id="fuel-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Log Fuel Fill-up</h3>
+        <button id="fuel-modal-close-btn" class="modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="fuel-form" class="modal-form" novalidate>
+        <div class="form-field">
+          <label for="fuel-form-vehicle">Vehicle *</label>
+          <div class="select-wrapper">
+            <i data-lucide="truck" class="select-icon"></i>
+            <select id="fuel-form-vehicle" required>
+              <option value="">Select Vehicle</option>
+            </select>
+          </div>
+          <span class="field-error" id="error-fuel-vehicle"></span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="fuel-form-liters">Volume (Liters) *</label>
+            <input type="number" id="fuel-form-liters" placeholder="50.0" min="0.1" step="0.1" required>
+            <span class="field-error" id="error-fuel-liters"></span>
+          </div>
+          
+          <div class="form-field">
+            <label for="fuel-form-cost">Cost ($) *</label>
+            <input type="number" id="fuel-form-cost" placeholder="0.00" min="0.01" step="0.01" required>
+            <span class="field-error" id="error-fuel-cost"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="fuel-form-distance">Distance Traveled (km) *</label>
+            <input type="number" id="fuel-form-distance" placeholder="400" min="0" required>
+            <span class="field-error" id="error-fuel-distance"></span>
+          </div>
+          
+          <div class="form-field">
+            <label for="fuel-form-date">Date *</label>
+            <input type="date" id="fuel-form-date" required>
+            <span class="field-error" id="error-fuel-date"></span>
+          </div>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="fuel-form-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Fuel Log</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Form Modal (Log Expense) -->
+  <div id="expense-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Log General Expense</h3>
+        <button id="expense-modal-close-btn" class="modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="expense-form" class="modal-form" novalidate>
+        <div class="form-field">
+          <label for="expense-form-vehicle">Vehicle *</label>
+          <div class="select-wrapper">
+            <i data-lucide="truck" class="select-icon"></i>
+            <select id="expense-form-vehicle" required>
+              <option value="">Select Vehicle</option>
+            </select>
+          </div>
+          <span class="field-error" id="error-expense-vehicle"></span>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="expense-form-type">Expense Type *</label>
+            <div class="select-wrapper">
+              <i data-lucide="info" class="select-icon"></i>
+              <select id="expense-form-type" required>
+                <option value="Toll">Toll</option>
+                <option value="Insurance">Insurance</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+          </div>
+          
+          <div class="form-field">
+            <label for="expense-form-amount">Amount ($) *</label>
+            <input type="number" id="expense-form-amount" placeholder="0.00" min="0.01" step="0.01" required>
+            <span class="field-error" id="error-expense-amount"></span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="expense-form-date">Date *</label>
+          <input type="date" id="expense-form-date" required>
+          <span class="field-error" id="error-expense-date"></span>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" id="expense-form-cancel" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Expense</button>
         </div>
       </form>
     </div>

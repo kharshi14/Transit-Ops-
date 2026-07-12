@@ -154,3 +154,64 @@ export interface User {
   role: UserRole;
   createdAt: Date;
 }
+
+// --- Maintenance Interfaces ---
+export interface MaintenanceRecord {
+  id: string;
+  vehicleId: string;
+  maintenanceType: string;
+  description: string;
+  cost: number;
+  startDate: Date;
+  endDate?: Date;
+  status: 'Active' | 'Completed';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface CreateMaintenanceInput {
+  vehicleId: string;
+  maintenanceType: string;
+  description: string;
+  cost: number;
+  startDate: Date;
+  endDate?: Date;
+  status?: 'Active' | 'Completed';
+}
+
+// --- Fuel Log Interfaces ---
+export interface FuelLog {
+  id: string;
+  vehicleId: string;
+  liters: number;
+  cost: number;
+  distance: number;
+  date: Date;
+  createdAt: Date;
+}
+
+export interface CreateFuelLogInput {
+  vehicleId: string;
+  liters: number;
+  cost: number;
+  distance: number;
+  date: Date;
+}
+
+// --- Expense Interfaces ---
+export interface ExpenseRecord {
+  id: string;
+  vehicleId: string;
+  expenseType: 'Toll' | 'Maintenance' | 'Insurance' | 'Other';
+  amount: number;
+  date: Date;
+  createdAt: Date;
+}
+
+export interface CreateExpenseInput {
+  vehicleId: string;
+  expenseType: 'Toll' | 'Maintenance' | 'Insurance' | 'Other';
+  amount: number;
+  date: Date;
+}
+
