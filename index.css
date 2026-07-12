@@ -746,6 +746,25 @@ body {
   box-shadow: 0 0 8px var(--color-danger);
 }
 
+.status-badge.inshop {
+  background-color: rgba(245, 158, 11, 0.08);
+  color: var(--color-warning);
+  border: 1px solid rgba(245, 158, 11, 0.15);
+}
+.status-badge.inshop .status-dot {
+  background-color: var(--color-warning);
+  box-shadow: 0 0 8px var(--color-warning);
+}
+
+.status-badge.retired {
+  background-color: rgba(100, 116, 139, 0.08);
+  color: var(--text-muted);
+  border: 1px solid rgba(100, 116, 139, 0.15);
+}
+.status-badge.retired .status-dot {
+  background-color: var(--text-muted);
+}
+
 /* Actions cell */
 .actions-header {
   text-align: right;

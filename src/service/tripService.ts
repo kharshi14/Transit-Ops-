@@ -60,13 +60,13 @@ export class TripService {
       throw new VehicleNotFoundError(input.vehicleId);
     }
     if (vehicle.status !== VehicleStatus.Available) {
-      throw new DriverBusinessRuleError(`Vehicle with plate "${vehicle.licensePlate}" is not available. Status: ${vehicle.status}`);
+      throw new DriverBusinessRuleError(`Vehicle with registration number "${vehicle.registrationNumber}" is not available. Status: ${vehicle.status}`);
     }
 
     // 4. Validate cargo weight capacity
-    if (input.cargoWeight > vehicle.maxCargoCapacity) {
+    if (input.cargoWeight > vehicle.maxLoadCapacity) {
       throw new DriverBusinessRuleError(
-        `Cargo weight (${input.cargoWeight} kg) exceeds vehicle's maximum cargo capacity (${vehicle.maxCargoCapacity} kg).`
+        `Cargo weight (${input.cargoWeight} kg) exceeds vehicle's maximum cargo capacity (${vehicle.maxLoadCapacity} kg).`
       );
     }
 
@@ -132,7 +132,7 @@ export class TripService {
       throw new VehicleNotFoundError(trip.vehicleId);
     }
     if (vehicle.status !== VehicleStatus.Available) {
-      throw new DriverBusinessRuleError(`Vehicle with plate "${vehicle.licensePlate}" is no longer available. Status: ${vehicle.status}`);
+      throw new DriverBusinessRuleError(`Vehicle with registration number "${vehicle.registrationNumber}" is no longer available. Status: ${vehicle.status}`);
     }
 
     // Update Driver & Vehicle to On Trip

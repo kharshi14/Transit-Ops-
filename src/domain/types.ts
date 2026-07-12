@@ -51,24 +51,41 @@ export interface UpdateDriverInput {
 export enum VehicleStatus {
   Available = 'Available',
   OnTrip = 'On Trip',
-  InMaintenance = 'In Maintenance',
+  InShop = 'In Shop',
+  Retired = 'Retired',
 }
 
 export interface Vehicle {
   id: string;
-  licensePlate: string;
-  makeModel: string;
+  registrationNumber: string; // unique
+  nameModel: string;
+  type: string; // e.g. Truck, Van, Bus
+  maxLoadCapacity: number; // in kg
+  odometer: number; // in km
+  acquisitionCost: number; // in USD or local currency
   status: VehicleStatus;
-  maxCargoCapacity: number; // in kg
   createdAt: Date;
   updatedAt: Date;
 }
 
 export interface CreateVehicleInput {
-  licensePlate: string;
-  makeModel: string;
+  registrationNumber: string;
+  nameModel: string;
+  type: string;
+  maxLoadCapacity: number;
+  odometer: number;
+  acquisitionCost: number;
   status?: VehicleStatus;
-  maxCargoCapacity: number;
+}
+
+export interface UpdateVehicleInput {
+  registrationNumber?: string;
+  nameModel?: string;
+  type?: string;
+  maxLoadCapacity?: number;
+  odometer?: number;
+  acquisitionCost?: number;
+  status?: VehicleStatus;
 }
 
 // --- Trip Interfaces ---

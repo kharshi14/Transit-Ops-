@@ -32,7 +32,7 @@
           <i data-lucide="navigation"></i>
           <span>Trips</span>
         </a>
-        <a href="#" class="nav-item disabled" title="Coming Soon">
+        <a href="#" id="nav-vehicles" class="nav-item">
           <i data-lucide="truck"></i>
           <span>Vehicles</span>
         </a>
@@ -301,6 +301,111 @@
           </div>
         </section>
       </div>
+
+      <!-- VEHICLES TAB CONTENT -->
+      <div id="vehicles-tab-content" class="tab-content hidden">
+        <!-- Dashboard Summary Metrics -->
+        <section class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Total Fleet</span>
+              <h2 id="metric-total-vehicles">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-valid">
+              <i data-lucide="truck"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Available</span>
+              <h2 id="metric-available-vehicles">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-available">
+              <i data-lucide="check-circle"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">In Shop</span>
+              <h2 id="metric-inshop-vehicles">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-expiring">
+              <i data-lucide="wrench"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Retired</span>
+              <h2 id="metric-retired-vehicles">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-expired">
+              <i data-lucide="archive"></i>
+            </div>
+          </div>
+        </section>
+
+        <!-- Grid Controls -->
+        <section class="table-controls">
+          <div class="search-box">
+            <i data-lucide="search"></i>
+            <input type="text" id="search-vehicle-input" placeholder="Search by registration or model...">
+          </div>
+          <div class="filters-row">
+            <div class="filter-group">
+              <label for="status-vehicle-filter">Status</label>
+              <select id="status-vehicle-filter">
+                <option value="ALL">All Statuses</option>
+                <option value="Available">Available</option>
+                <option value="On Trip">On Trip</option>
+                <option value="In Shop">In Shop</option>
+                <option value="Retired">Retired</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="type-vehicle-filter">Type</label>
+              <select id="type-vehicle-filter">
+                <option value="ALL">All Types</option>
+                <option value="Heavy Truck">Heavy Truck</option>
+                <option value="Medium Truck">Medium Truck</option>
+                <option value="Cargo Van">Cargo Van</option>
+                <option value="Shuttle Bus">Shuttle Bus</option>
+              </select>
+            </div>
+            <button id="add-vehicle-btn" class="btn btn-primary btn-with-icon">
+              <i data-lucide="plus"></i>
+              <span>Add Vehicle</span>
+            </button>
+          </div>
+        </section>
+
+        <!-- Data Grid Table -->
+        <section class="table-container-glass">
+          <div class="table-scroll-area">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Vehicle Details</th>
+                  <th>Type</th>
+                  <th>Max Load Capacity</th>
+                  <th>Odometer</th>
+                  <th>Acquisition Cost</th>
+                  <th>Status</th>
+                  <th class="actions-header">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="vehicle-table-body">
+                <tr class="empty-state-row">
+                  <td colspan="7">
+                    <div class="loading-state">
+                      <div class="spinner"></div>
+                      <span>Loading fleet registry...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
     </main>
   </div>
 
@@ -493,6 +598,112 @@
         <div class="modal-footer">
           <button type="button" id="trip-form-cancel-btn" class="btn btn-secondary">Cancel</button>
           <button type="submit" class="btn btn-primary">Create Trip</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Form Modal (Register / Edit Vehicle) -->
+  <div id="vehicle-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="vehicle-modal-title">Register New Vehicle</h3>
+        <button id="vehicle-modal-close-btn" class="modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="vehicle-form" class="modal-form" novalidate>
+        <input type="hidden" id="form-vehicle-id">
+        
+        <div class="form-row">
+          <div class="form-field">
+            <label for="form-vehicle-reg">Registration Number *</label>
+            <input type="text" id="form-vehicle-reg" placeholder="e.g. TX-CDL-882" required>
+            <span class="field-error" id="error-vehicle-reg"></span>
+          </div>
+          
+          <div class="form-field">
+            <label for="form-vehicle-model">Vehicle Name / Model *</label>
+            <input type="text" id="form-vehicle-model" placeholder="e.g. Volvo VNL 860" required>
+            <span class="field-error" id="error-vehicle-model"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="form-vehicle-type">Vehicle Type *</label>
+            <input type="text" id="form-vehicle-type" placeholder="e.g. Heavy Truck" required>
+            <span class="field-error" id="error-vehicle-type"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="form-vehicle-capacity">Maximum Load Capacity (kg) *</label>
+            <input type="number" id="form-vehicle-capacity" min="1" placeholder="e.g. 10000" required>
+            <span class="field-error" id="error-vehicle-capacity"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="form-vehicle-odometer">Odometer Reading (km) *</label>
+            <input type="number" id="form-vehicle-odometer" min="0" placeholder="e.g. 1500" required>
+            <span class="field-error" id="error-vehicle-odometer"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="form-vehicle-cost">Acquisition Cost (USD) *</label>
+            <input type="number" id="form-vehicle-cost" min="1" placeholder="e.g. 85000" required>
+            <span class="field-error" id="error-vehicle-cost"></span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="form-vehicle-status">Initial Status</label>
+          <select id="form-vehicle-status">
+            <option value="Available">Available</option>
+            <option value="On Trip">On Trip</option>
+            <option value="In Shop">In Shop</option>
+            <option value="Retired">Retired</option>
+          </select>
+          <span class="field-error" id="error-vehicle-status"></span>
+        </div>
+
+        <div id="vehicle-form-summary-error" class="form-summary-error hidden"></div>
+
+        <div class="modal-footer">
+          <button type="button" id="vehicle-form-cancel-btn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="vehicle-form-submit-btn" class="btn btn-primary">Save Vehicle</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Odometer Update Modal -->
+  <div id="odometer-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h3>Update Odometer</h3>
+        <button id="odometer-modal-close-btn" class="modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="odometer-form" class="modal-form">
+        <input type="hidden" id="odometer-vehicle-id">
+        <p class="modal-subtitle">Update mileage logs for vehicle <strong id="odometer-vehicle-reg">TX-PLATE</strong>.</p>
+        
+        <div class="form-field">
+          <label>Current Reading</label>
+          <div id="current-odometer-label" style="font-size: 16px; font-weight: 700; color: var(--color-primary-hover); margin-bottom: 10px;">0 km</div>
+        </div>
+
+        <div class="form-field">
+          <label for="new-odometer-input">New Odometer Reading (km) *</label>
+          <input type="number" id="new-odometer-input" min="0" required>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="odometer-cancel-btn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Update Log</button>
         </div>
       </form>
     </div>

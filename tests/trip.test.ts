@@ -34,10 +34,13 @@ describe('Trip Management', () => {
     // Seed 1 available vehicle
     const vehicle = await vehicleRepo.save({
       id: 'v-1',
-      licensePlate: 'PLT-100',
-      makeModel: 'Ford Transit',
+      registrationNumber: 'PLT-100',
+      nameModel: 'Ford Transit',
+      type: 'Cargo Van',
       status: VehicleStatus.Available,
-      maxCargoCapacity: 3000,
+      maxLoadCapacity: 3000,
+      odometer: 100,
+      acquisitionCost: 28000,
       createdAt: new Date(),
       updatedAt: new Date(),
     });
