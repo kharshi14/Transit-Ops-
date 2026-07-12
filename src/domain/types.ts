@@ -137,3 +137,20 @@ export interface UpdateTripInput {
   status?: TripStatus;
   region?: string;
 }
+
+// --- User & RBAC Interfaces ---
+export enum UserRole {
+  Admin = 'Admin',
+  Dispatcher = 'Dispatcher',
+  Maintenance = 'Maintenance',
+  Viewer = 'Viewer',
+}
+
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  passwordHash: string;
+  role: UserRole;
+  createdAt: Date;
+}

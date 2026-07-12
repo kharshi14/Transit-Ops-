@@ -1,4 +1,4 @@
-import { DriverStatus, Driver, CreateDriverInput, UpdateDriverInput, Vehicle, VehicleStatus, Trip, TripStatus, CreateTripInput, CreateVehicleInput, UpdateVehicleInput } from '../domain/types.js';
+import { DriverStatus, Driver, CreateDriverInput, UpdateDriverInput, Vehicle, VehicleStatus, Trip, TripStatus, CreateTripInput, CreateVehicleInput, UpdateVehicleInput, UserRole, User } from '../domain/types.js';
 import { DriverValidationError } from '../domain/driver.js';
 import { TripValidationError } from '../domain/trip.js';
 import { VehicleValidationError } from '../domain/vehicle.js';
@@ -8,6 +8,7 @@ import { InMemoryTripRepository } from '../repository/inMemoryTripRepository.js'
 import { DriverService, DriverBusinessRuleError, DriverAlreadyExistsError } from '../service/driverService.js';
 import { VehicleService, VehicleBusinessRuleError, VehicleAlreadyExistsError } from '../service/vehicleService.js';
 import { TripService } from '../service/tripService.js';
+import { AuthService } from '../service/authService.js';
 
 // Declare global Lucide icon variable from CDN script
 declare const lucide: any;
@@ -20,6 +21,8 @@ const tripRepository = new InMemoryTripRepository();
 const driverService = new DriverService(driverRepository);
 const vehicleService = new VehicleService(vehicleRepository);
 const tripService = new TripService(tripRepository, driverRepository, vehicleRepository);
+const authService = new AuthService();
+let currentUser: User | null = null;
 
 // Track editing state
 let editingDriverId: string | null = null;
@@ -643,15 +646,19 @@ async function renderDriversView() {
       </td>
       <td>
         <div class="actions-cell">
-          <button class="btn-icon log-safety-btn" title="Log Safety Event" data-id="${driver.id}">
-            <i data-lucide="shield-alert"></i>
-          </button>
-          <button class="btn-icon edit-btn" title="Edit Profile & View Logs" data-id="${driver.id}">
-            <i data-lucide="edit-3"></i>
-          </button>
-          <button class="btn-icon danger-hover delete-btn" title="Delete Driver" data-id="${driver.id}">
-            <i data-lucide="trash-2"></i>
-          </button>
+          ${currentUser && currentUser.role === UserRole.Admin ? `
+            <button class="btn-icon log-safety-btn" title="Log Safety Event" data-id="${driver.id}">
+              <i data-lucide="shield-alert"></i>
+            </button>
+            <button class="btn-icon edit-btn" title="Edit Profile & View Logs" data-id="${driver.id}">
+              <i data-lucide="edit-3"></i>
+            </button>
+            <button class="btn-icon danger-hover delete-btn" title="Delete Driver" data-id="${driver.id}">
+              <i data-lucide="trash-2"></i>
+            </button>
+          ` : `
+            <span class="route-subtext">Admin only</span>
+          `}
         </div>
       </td>
     `;
@@ -772,15 +779,24 @@ async function renderVehiclesView() {
       </td>
       <td>
         <div class="actions-cell">
-          <button class="btn-icon update-odo-btn" title="Update Odometer" data-id="${vehicle.id}">
-            <i data-lucide="wrench"></i>
-          </button>
-          <button class="btn-icon edit-vehicle-btn" title="Edit Specs" data-id="${vehicle.id}">
-            <i data-lucide="edit-3"></i>
-          </button>
-          <button class="btn-icon danger-hover delete-vehicle-btn" title="Remove Vehicle" data-id="${vehicle.id}">
-            <i data-lucide="trash-2"></i>
-          </button>
+          ${currentUser && currentUser.role === UserRole.Admin ? `
+            <button class="btn-icon update-odo-btn" title="Update Odometer" data-id="${vehicle.id}">
+              <i data-lucide="wrench"></i>
+            </button>
+            <button class="btn-icon edit-vehicle-btn" title="Edit Specs" data-id="${vehicle.id}">
+              <i data-lucide="edit-3"></i>
+            </button>
+            <button class="btn-icon danger-hover delete-vehicle-btn" title="Remove Vehicle" data-id="${vehicle.id}">
+              <i data-lucide="trash-2"></i>
+            </button>
+          ` : currentUser && currentUser.role === UserRole.Maintenance ? `
+            <button class="btn-icon update-odo-btn" title="Update Odometer" data-id="${vehicle.id}">
+              <i data-lucide="wrench"></i>
+            </button>
+            <span class="route-subtext">Maint. Access</span>
+          ` : `
+            <span class="route-subtext">Read-only</span>
+          `}
         </div>
       </td>
     `;
@@ -924,22 +940,26 @@ async function renderTripsView() {
       </td>
       <td>
         <div class="actions-cell">
-          ${isDraft ? `
-            <button class="btn btn-secondary btn-icon dispatch-trip-btn" title="Dispatch Trip" data-id="${trip.id}">
-              <i data-lucide="send"></i>
-            </button>
-          ` : ''}
-          ${isDispatched ? `
-            <button class="btn btn-secondary btn-icon complete-trip-btn" title="Mark Completed" data-id="${trip.id}">
-              <i data-lucide="check-square"></i>
-            </button>
-          ` : ''}
-          ${!isTerminal ? `
-            <button class="btn btn-secondary btn-icon danger-hover cancel-trip-btn" title="Cancel Trip" data-id="${trip.id}">
-              <i data-lucide="slash"></i>
-            </button>
+          ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? `
+            ${isDraft ? `
+              <button class="btn btn-secondary btn-icon dispatch-trip-btn" title="Dispatch Trip" data-id="${trip.id}">
+                <i data-lucide="send"></i>
+              </button>
+            ` : ''}
+            ${isDispatched ? `
+              <button class="btn btn-secondary btn-icon complete-trip-btn" title="Mark Completed" data-id="${trip.id}">
+                <i data-lucide="check-square"></i>
+              </button>
+            ` : ''}
+            ${!isTerminal ? `
+              <button class="btn btn-secondary btn-icon danger-hover cancel-trip-btn" title="Cancel Trip" data-id="${trip.id}">
+                <i data-lucide="slash"></i>
+              </button>
+            ` : `
+              <span class="route-subtext">—</span>
+            `}
           ` : `
-            <span class="route-subtext">—</span>
+            <span class="route-subtext">Read-only</span>
           `}
         </div>
       </td>
@@ -1630,9 +1650,146 @@ tripFormVehicle.addEventListener('change', async () => {
   }
 });
 
+// --- Authentication & RBAC Login Listeners ---
+const mainAppContainer = document.getElementById('main-app-container') as HTMLDivElement;
+const loginOverlay = document.getElementById('login-overlay') as HTMLDivElement;
+const loginForm = document.getElementById('login-form') as HTMLFormElement;
+const loginEmail = document.getElementById('login-email') as HTMLInputElement;
+const loginPassword = document.getElementById('login-password') as HTMLInputElement;
+const loginError = document.getElementById('login-error') as HTMLDivElement;
+const loginErrorText = document.getElementById('login-error-text') as HTMLSpanElement;
+const logoutBtn = document.getElementById('logout-btn') as HTMLButtonElement;
+
+const currentUserAvatar = document.getElementById('current-user-avatar') as HTMLDivElement;
+const currentUserName = document.getElementById('current-user-name') as HTMLSpanElement;
+const currentUserRole = document.getElementById('current-user-role') as HTMLSpanElement;
+
+function applyRbacRules() {
+  if (!currentUser) return;
+
+  // Reset all elements
+  document.getElementById('add-driver-btn')?.classList.remove('rbac-hidden');
+  document.getElementById('add-vehicle-btn')?.classList.remove('rbac-hidden');
+  document.getElementById('add-trip-btn')?.classList.remove('rbac-hidden');
+
+  navDrivers.classList.remove('rbac-hidden');
+  navTrips.classList.remove('rbac-hidden');
+  navVehicles.classList.remove('rbac-hidden');
+
+  if (currentUser.role === UserRole.Viewer) {
+    document.getElementById('add-driver-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-vehicle-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-trip-btn')?.classList.add('rbac-hidden');
+  } else if (currentUser.role === UserRole.Dispatcher) {
+    document.getElementById('add-driver-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-vehicle-btn')?.classList.add('rbac-hidden');
+  } else if (currentUser.role === UserRole.Maintenance) {
+    document.getElementById('add-driver-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-vehicle-btn')?.classList.add('rbac-hidden');
+    document.getElementById('add-trip-btn')?.classList.add('rbac-hidden');
+
+    navDrivers.classList.add('rbac-hidden');
+    navTrips.classList.add('rbac-hidden');
+    
+    if (activeTab === 'drivers' || activeTab === 'trips') {
+      switchTab('dashboard');
+    }
+  }
+}
+
+async function handleLoginSubmit(e: Event) {
+  e.preventDefault();
+  loginError.classList.add('hidden');
+
+  const email = loginEmail.value;
+  const password = loginPassword.value;
+
+  try {
+    const user = await authService.authenticate(email, password);
+    setCurrentUserSession(user);
+  } catch (err: any) {
+    loginErrorText.textContent = err.message;
+    loginError.classList.remove('hidden');
+  }
+}
+
+function setCurrentUserSession(user: User) {
+  currentUser = user;
+  sessionStorage.setItem('transit_ops_user', JSON.stringify({
+    id: user.id,
+    email: user.email,
+    name: user.name,
+    role: user.role,
+  }));
+
+  // Update profile display
+  currentUserName.textContent = user.name;
+  currentUserRole.textContent = user.role;
+  currentUserAvatar.textContent = user.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+
+  // Hide login card, show app workspace
+  loginOverlay.classList.add('hidden');
+  mainAppContainer.classList.remove('hidden');
+
+  applyRbacRules();
+  renderDashboard();
+}
+
+function handleLogout() {
+  currentUser = null;
+  sessionStorage.removeItem('transit_ops_user');
+  
+  loginForm.reset();
+  loginError.classList.add('hidden');
+  
+  mainAppContainer.classList.add('hidden');
+  loginOverlay.classList.remove('hidden');
+}
+
+function initAuthListeners() {
+  loginForm.addEventListener('submit', handleLoginSubmit);
+  logoutBtn.addEventListener('click', handleLogout);
+
+  // Demo buttons auto-select
+  document.querySelectorAll('.demo-btn').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const target = e.currentTarget as HTMLButtonElement;
+      const email = target.getAttribute('data-email') || '';
+      const pwd = target.getAttribute('data-pwd') || '';
+      loginEmail.value = email;
+      loginPassword.value = pwd;
+      // Trigger submit
+      loginForm.dispatchEvent(new Event('submit', { cancelable: true }));
+    });
+  });
+}
+
+function checkSession() {
+  const stored = sessionStorage.getItem('transit_ops_user');
+  if (stored) {
+    try {
+      const parsed = JSON.parse(stored);
+      const user: User = {
+        id: parsed.id,
+        email: parsed.email,
+        name: parsed.name,
+        role: parsed.role,
+        passwordHash: '',
+        createdAt: new Date(),
+      };
+      setCurrentUserSession(user);
+    } catch {
+      handleLogout();
+    }
+  } else {
+    handleLogout();
+  }
+}
+
 // --- Initialization Entry Point ---
 (async () => {
   await seedMockData();
-  await renderDashboard();
+  initAuthListeners();
+  checkSession();
   switchTab('dashboard'); // Start on overview dashboard tab
 })();

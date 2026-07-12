@@ -14,7 +14,7 @@
   <link rel="stylesheet" href="/index.css">
 </head>
 <body>
-  <div class="app-container">
+  <div class="app-container hidden" id="main-app-container">
     <!-- Sidebar Navigation -->
     <aside class="sidebar">
       <div class="brand">
@@ -50,12 +50,17 @@
         </a>
       </nav>
       <div class="sidebar-footer">
-        <div class="user-profile">
-          <div class="user-avatar">SO</div>
-          <div class="user-info">
-            <span class="user-name">Ops Officer</span>
-            <span class="user-role">Administrator</span>
+        <div class="user-profile" style="display: flex; align-items: center; justify-content: space-between; width: 100%;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="user-avatar" id="current-user-avatar">SO</div>
+            <div class="user-info">
+              <span class="user-name" id="current-user-name">Ops Officer</span>
+              <span class="user-role" id="current-user-role">Administrator</span>
+            </div>
           </div>
+          <button id="logout-btn" class="btn-icon logout-btn" title="Sign Out" style="background: transparent; border: none; color: var(--text-secondary); cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 6px; border-radius: 6px; transition: all 0.2s;">
+            <i data-lucide="log-out" style="width: 18px; height: 18px;"></i>
+          </button>
         </div>
       </div>
     </aside>
@@ -881,6 +886,59 @@
           <button type="submit" class="btn btn-primary">Update Log</button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- Fullscreen Login Overlay -->
+  <div id="login-overlay" class="login-overlay">
+    <div class="login-card">
+      <div class="login-header">
+        <div class="login-logo">
+          <i data-lucide="bus"></i>
+        </div>
+        <h2>Transit-Ops Login</h2>
+        <p>Enterprise Fleet Control Panel</p>
+      </div>
+      <form id="login-form" class="login-form" novalidate>
+        <div class="form-field">
+          <label for="login-email">Corporate Email</label>
+          <input type="email" id="login-email" placeholder="email@transitops.com" required>
+        </div>
+        <div class="form-field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" required>
+        </div>
+        <div id="login-error" class="login-error-panel hidden">
+          <i data-lucide="alert-circle"></i>
+          <span id="login-error-text">Invalid email or password.</span>
+        </div>
+        <button type="submit" id="login-submit-btn" class="btn btn-primary" style="width: 100%; height: 44px; margin-top: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>Sign In</span>
+          <i data-lucide="log-in" style="width: 16px; height: 16px;"></i>
+        </button>
+      </form>
+      
+      <div class="demo-accounts-box">
+        <h4>Demo Accounts (Quick Select)</h4>
+        <div class="demo-buttons-grid">
+          <button class="demo-btn" data-email="admin@transitops.com" data-pwd="admin123">
+            <strong>Admin</strong>
+            <span>Full Control</span>
+          </button>
+          <button class="demo-btn" data-email="dispatcher@transitops.com" data-pwd="dispatch123">
+            <strong>Dispatcher</strong>
+            <span>Trips Control</span>
+          </button>
+          <button class="demo-btn" data-email="maintenance@transitops.com" data-pwd="maint123">
+            <strong>Maintenance</strong>
+            <span>Fleet Care</span>
+          </button>
+          <button class="demo-btn" data-email="viewer@transitops.com" data-pwd="view123">
+            <strong>Viewer</strong>
+            <span>Read-Only</span>
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
