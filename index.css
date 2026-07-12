@@ -474,6 +474,11 @@ body {
   border-color: var(--border-focus);
 }
 
+.select-wrapper select option {
+  background-color: var(--bg-sidebar);
+  color: var(--text-primary);
+}
+
 /* --- Buttons --- */
 .btn {
   display: inline-flex;
@@ -972,6 +977,11 @@ body {
   border-color: var(--border-focus);
   background-color: rgba(255, 255, 255, 0.04);
   box-shadow: 0 0 10px rgba(59, 130, 246, 0.1);
+}
+
+.form-field select option {
+  background-color: var(--bg-sidebar);
+  color: var(--text-primary);
 }
 
 .form-field input.invalid,
