@@ -55,6 +55,7 @@ export class VehicleService {
       odometer: input.odometer,
       acquisitionCost: input.acquisitionCost,
       status: input.status ?? VehicleStatus.Available,
+      region: input.region?.trim() || 'Texas',
       createdAt: now,
       updatedAt: now,
     };
@@ -105,6 +106,7 @@ export class VehicleService {
       odometer: input.odometer ?? existing.odometer,
       acquisitionCost: input.acquisitionCost ?? existing.acquisitionCost,
       status: input.status ?? existing.status,
+      region: input.region?.trim() ?? existing.region,
       updatedAt: new Date(),
     };
 

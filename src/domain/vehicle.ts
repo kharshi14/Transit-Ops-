@@ -82,6 +82,12 @@ export function validateVehicleStatus(status: any): void {
   }
 }
 
+export function validateRegion(region: string): void {
+  if (!region || typeof region !== 'string' || region.trim().length < 2) {
+    throw new VehicleValidationError('region', 'Region must be a non-empty string of at least 2 characters.');
+  }
+}
+
 /**
  * Validates full creation inputs.
  */
@@ -92,6 +98,9 @@ export function validateCreateVehicle(input: CreateVehicleInput): void {
   validateMaxLoadCapacity(input.maxLoadCapacity);
   validateOdometer(input.odometer);
   validateAcquisitionCost(input.acquisitionCost);
+  if (input.region !== undefined) {
+    validateRegion(input.region);
+  }
   if (input.status !== undefined) {
     validateVehicleStatus(input.status);
   }
@@ -108,4 +117,5 @@ export function validateUpdateVehicle(input: UpdateVehicleInput): void {
   if (input.odometer !== undefined) validateOdometer(input.odometer);
   if (input.acquisitionCost !== undefined) validateAcquisitionCost(input.acquisitionCost);
   if (input.status !== undefined) validateVehicleStatus(input.status);
+  if (input.region !== undefined) validateRegion(input.region);
 }

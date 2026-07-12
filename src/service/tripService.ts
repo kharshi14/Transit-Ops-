@@ -81,6 +81,7 @@ export class TripService {
       cargoWeight: input.cargoWeight,
       plannedDistance: input.plannedDistance,
       status: input.status ?? TripStatus.Draft,
+      region: input.region?.trim() || vehicle.region || 'Texas',
       createdAt: now,
       updatedAt: now,
     };

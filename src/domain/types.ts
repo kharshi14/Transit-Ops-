@@ -23,6 +23,7 @@ export interface Driver {
   safetyScore: number; // 0 to 100
   status: DriverStatus;
   safetyLog: SafetyLogEntry[];
+  region: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -33,6 +34,7 @@ export interface CreateDriverInput {
   licenseCategory: string;
   licenseExpiryDate: Date;
   contactNumber: string;
+  region?: string;
   safetyScore?: number; // 0-100, defaults to 100
   status?: DriverStatus; // defaults to 'Available'
 }
@@ -45,6 +47,7 @@ export interface UpdateDriverInput {
   contactNumber?: string;
   safetyScore?: number;
   status?: DriverStatus;
+  region?: string;
 }
 
 // --- Vehicle Interfaces ---
@@ -64,6 +67,7 @@ export interface Vehicle {
   odometer: number; // in km
   acquisitionCost: number; // in USD or local currency
   status: VehicleStatus;
+  region: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -75,6 +79,7 @@ export interface CreateVehicleInput {
   maxLoadCapacity: number;
   odometer: number;
   acquisitionCost: number;
+  region?: string;
   status?: VehicleStatus;
 }
 
@@ -86,6 +91,7 @@ export interface UpdateVehicleInput {
   odometer?: number;
   acquisitionCost?: number;
   status?: VehicleStatus;
+  region?: string;
 }
 
 // --- Trip Interfaces ---
@@ -105,6 +111,7 @@ export interface Trip {
   cargoWeight: number; // in kg
   plannedDistance: number; // in km
   status: TripStatus;
+  region: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -116,6 +123,7 @@ export interface CreateTripInput {
   driverId: string;
   cargoWeight: number;
   plannedDistance: number;
+  region?: string;
   status?: TripStatus; // defaults to 'Draft'
 }
 
@@ -127,4 +135,5 @@ export interface UpdateTripInput {
   cargoWeight?: number;
   plannedDistance?: number;
   status?: TripStatus;
+  region?: string;
 }

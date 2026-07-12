@@ -24,7 +24,11 @@
         <span class="brand-name">Transit-Ops</span>
       </div>
       <nav class="nav-menu">
-        <a href="#" id="nav-drivers" class="nav-item active">
+        <a href="#" id="nav-dashboard" class="nav-item active">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="#" id="nav-drivers" class="nav-item">
           <i data-lucide="users"></i>
           <span>Drivers</span>
         </a>
@@ -86,8 +90,155 @@
         </button>
       </div>
 
+      <!-- DASHBOARD TAB CONTENT -->
+      <div id="dashboard-tab-content" class="tab-content">
+        <!-- Dashboard Top Filters -->
+        <section class="table-controls" style="margin-bottom: 24px;">
+          <div class="filters-row" style="width: 100%; justify-content: flex-start; gap: 20px;">
+            <div class="filter-group">
+              <label for="dashboard-type-filter">Vehicle Type</label>
+              <select id="dashboard-type-filter">
+                <option value="ALL">All Types</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="dashboard-status-filter">Fleet Status</label>
+              <select id="dashboard-status-filter">
+                <option value="ALL">All Statuses</option>
+                <option value="Available">Available</option>
+                <option value="On Trip">On Trip</option>
+                <option value="In Shop">In Shop</option>
+                <option value="Retired">Retired</option>
+              </select>
+            </div>
+            <div class="filter-group">
+              <label for="dashboard-region-filter">Operations Region</label>
+              <select id="dashboard-region-filter">
+                <option value="ALL">All Regions</option>
+              </select>
+            </div>
+          </div>
+        </section>
+
+        <!-- KPI Metrics Grid -->
+        <section class="metrics-grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); margin-bottom: 24px;">
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Active Vehicles</span>
+              <h2 id="kpi-active-vehicles">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-ontrip">
+              <i data-lucide="truck"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Available Vehicles</span>
+              <h2 id="kpi-available-vehicles">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-available">
+              <i data-lucide="check-circle"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Vehicles In Shop</span>
+              <h2 id="kpi-inshop-vehicles">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-expiring">
+              <i data-lucide="wrench"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Active Trips</span>
+              <h2 id="kpi-active-trips">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-ontrip">
+              <i data-lucide="navigation"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Pending Trips</span>
+              <h2 id="kpi-pending-trips">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-draft">
+              <i data-lucide="clock"></i>
+            </div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Drivers On Duty</span>
+              <h2 id="kpi-drivers-onduty">0</h2>
+            </div>
+            <div class="metric-icon-wrapper label-valid">
+              <i data-lucide="users"></i>
+            </div>
+          </div>
+          <div class="metric-card glow-card">
+            <div class="metric-info">
+              <span class="metric-label">Fleet Utilization</span>
+              <h2 id="kpi-fleet-utilization">0%</h2>
+            </div>
+            <div class="metric-icon-wrapper label-available">
+              <i data-lucide="activity"></i>
+            </div>
+          </div>
+        </section>
+
+        <!-- Charts and Detailed Breakdown Section -->
+        <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 24px; margin-top: 24px;">
+          <!-- Left: Fleet Utilization Dial Chart (Glass Card) -->
+          <div class="metric-card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; min-height: 320px;">
+            <h3 style="font-family: var(--font-display); font-weight: 700; margin-bottom: 20px; align-self: flex-start; font-size: 15px;">Fleet Capacity Load</h3>
+            
+            <!-- Circular Progress Dial -->
+            <div class="utilization-dial-container" style="position: relative; width: 160px; height: 160px; display: flex; align-items: center; justify-content: center;">
+              <svg width="160" height="160" style="transform: rotate(-90deg);">
+                <circle cx="80" cy="80" r="70" stroke="rgba(255,255,255,0.05)" stroke-width="12" fill="transparent" />
+                <circle id="dial-progress-circle" cx="80" cy="80" r="70" stroke="var(--color-primary-hover)" stroke-width="12" fill="transparent"
+                        stroke-dasharray="440" stroke-dashoffset="440" stroke-linecap="round" style="transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1);" />
+              </svg>
+              <div style="position: absolute; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+                <span id="dial-percentage-label" style="font-family: var(--font-display); font-weight: 800; font-size: 32px; color: var(--text-primary); text-shadow: 0 0 10px var(--color-primary-glow);">0%</span>
+                <span style="font-size: 10px; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">Utilized</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Right: Active Routes & Fleet Status Breakdown -->
+          <div class="table-container-glass" style="margin-top: 0; padding: 20px;">
+            <h3 style="font-family: var(--font-display); font-weight: 700; margin-bottom: 16px; font-size: 15px;">Active Transit Routes</h3>
+            <div class="table-scroll-area" style="max-height: 240px; overflow-y: auto;">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>Active Route</th>
+                    <th>Region</th>
+                    <th>Assigned Driver</th>
+                    <th>Cargo Load</th>
+                    <th>Distance</th>
+                  </tr>
+                </thead>
+                <tbody id="dashboard-active-trips-list">
+                  <tr class="empty-state-row">
+                    <td colspan="5">
+                      <div class="empty-state" style="padding: 20px;">
+                        <i data-lucide="route" style="width: 24px; height: 24px;"></i>
+                        <span>No active routes currently running.</span>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <!-- DRIVERS TAB CONTENT -->
-      <div id="drivers-tab-content" class="tab-content">
+      <div id="drivers-tab-content" class="tab-content hidden">
         <!-- Metrics Panel -->
         <section class="metrics-grid">
           <div class="metric-card">
@@ -468,6 +619,14 @@
           </div>
         </div>
 
+        <div class="form-row">
+          <div class="form-field">
+            <label for="form-region">Operations Region *</label>
+            <input type="text" id="form-region" placeholder="e.g. Texas" required>
+            <span class="field-error" id="error-region"></span>
+          </div>
+        </div>
+
         <div class="form-field">
           <label for="form-safety">Safety Score (0 - 100)</label>
           <div class="slider-container">
@@ -593,6 +752,14 @@
           </div>
         </div>
 
+        <div class="form-row">
+          <div class="form-field">
+            <label for="trip-form-region">Operations Region *</label>
+            <input type="text" id="trip-form-region" placeholder="e.g. Texas" required>
+            <span class="field-error" id="error-trip-region"></span>
+          </div>
+        </div>
+
         <div id="trip-form-summary-error" class="form-summary-error hidden"></div>
 
         <div class="modal-footer">
@@ -657,15 +824,23 @@
           </div>
         </div>
 
-        <div class="form-field">
-          <label for="form-vehicle-status">Initial Status</label>
-          <select id="form-vehicle-status">
-            <option value="Available">Available</option>
-            <option value="On Trip">On Trip</option>
-            <option value="In Shop">In Shop</option>
-            <option value="Retired">Retired</option>
-          </select>
-          <span class="field-error" id="error-vehicle-status"></span>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="form-vehicle-status">Initial Status</label>
+            <select id="form-vehicle-status">
+              <option value="Available">Available</option>
+              <option value="On Trip">On Trip</option>
+              <option value="In Shop">In Shop</option>
+              <option value="Retired">Retired</option>
+            </select>
+            <span class="field-error" id="error-vehicle-status"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="form-vehicle-region">Operations Region *</label>
+            <input type="text" id="form-vehicle-region" placeholder="e.g. Texas" required>
+            <span class="field-error" id="error-vehicle-region"></span>
+          </div>
         </div>
 
         <div id="vehicle-form-summary-error" class="form-summary-error hidden"></div>

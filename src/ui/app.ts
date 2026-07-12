@@ -24,19 +24,40 @@ const tripService = new TripService(tripRepository, driverRepository, vehicleRep
 // Track editing state
 let editingDriverId: string | null = null;
 let editingVehicleId: string | null = null;
-let activeTab: 'drivers' | 'trips' | 'vehicles' = 'drivers';
+let activeTab: 'dashboard' | 'drivers' | 'trips' | 'vehicles' = 'dashboard';
 
 // --- DOM References ---
 
 // Tab Switching
+const navDashboard = document.getElementById('nav-dashboard') as HTMLAnchorElement;
 const navDrivers = document.getElementById('nav-drivers') as HTMLAnchorElement;
 const navTrips = document.getElementById('nav-trips') as HTMLAnchorElement;
 const navVehicles = document.getElementById('nav-vehicles') as HTMLAnchorElement;
+
+const dashboardTabContent = document.getElementById('dashboard-tab-content') as HTMLDivElement;
 const driversTabContent = document.getElementById('drivers-tab-content') as HTMLDivElement;
 const tripsTabContent = document.getElementById('trips-tab-content') as HTMLDivElement;
 const vehiclesTabContent = document.getElementById('vehicles-tab-content') as HTMLDivElement;
+
 const mainTitle = document.getElementById('main-title') as HTMLHeadingElement;
 const mainSubtitle = document.getElementById('main-subtitle') as HTMLParagraphElement;
+
+// Dashboard DOM
+const dashboardTypeFilter = document.getElementById('dashboard-type-filter') as HTMLSelectElement;
+const dashboardStatusFilter = document.getElementById('dashboard-status-filter') as HTMLSelectElement;
+const dashboardRegionFilter = document.getElementById('dashboard-region-filter') as HTMLSelectElement;
+
+const kpiActiveVehicles = document.getElementById('kpi-active-vehicles') as HTMLHeadingElement;
+const kpiAvailableVehicles = document.getElementById('kpi-available-vehicles') as HTMLHeadingElement;
+const kpiInshopVehicles = document.getElementById('kpi-inshop-vehicles') as HTMLHeadingElement;
+const kpiActiveTrips = document.getElementById('kpi-active-trips') as HTMLHeadingElement;
+const kpiPendingTrips = document.getElementById('kpi-pending-trips') as HTMLHeadingElement;
+const kpiDriversOnduty = document.getElementById('kpi-drivers-onduty') as HTMLHeadingElement;
+const kpiFleetUtilization = document.getElementById('kpi-fleet-utilization') as HTMLHeadingElement;
+
+const dialProgressCircle = document.getElementById('dial-progress-circle') as unknown as SVGCircleElement;
+const dialPercentageLabel = document.getElementById('dial-percentage-label') as HTMLSpanElement;
+const dashboardActiveTripsList = document.getElementById('dashboard-active-trips-list') as HTMLTableSectionElement;
 
 // Drivers DOM
 const driverTableBody = document.getElementById('driver-table-body') as HTMLTableSectionElement;
@@ -91,6 +112,7 @@ const formLicenseNum = document.getElementById('form-license-num') as HTMLInputE
 const formLicenseCat = document.getElementById('form-license-cat') as HTMLInputElement;
 const formExpiry = document.getElementById('form-expiry') as HTMLInputElement;
 const formStatus = document.getElementById('form-status') as HTMLSelectElement;
+const formRegion = document.getElementById('form-region') as HTMLInputElement;
 const formSafety = document.getElementById('form-safety') as HTMLInputElement;
 const sliderVal = document.getElementById('slider-val') as HTMLSpanElement;
 const addDriverBtn = document.getElementById('add-driver-btn') as HTMLButtonElement;
@@ -123,6 +145,7 @@ const tripFormCargo = document.getElementById('trip-form-cargo') as HTMLInputEle
 const tripFormDistance = document.getElementById('trip-form-distance') as HTMLInputElement;
 const tripFormDriver = document.getElementById('trip-form-driver') as HTMLSelectElement;
 const tripFormVehicle = document.getElementById('trip-form-vehicle') as HTMLSelectElement;
+const tripFormRegion = document.getElementById('trip-form-region') as HTMLInputElement;
 const addTripBtn = document.getElementById('add-trip-btn') as HTMLButtonElement;
 const tripFormCancelBtn = document.getElementById('trip-form-cancel-btn') as HTMLButtonElement;
 const tripModalCloseBtn = document.getElementById('trip-modal-close-btn') as HTMLButtonElement;
@@ -140,6 +163,7 @@ const formVehicleCapacity = document.getElementById('form-vehicle-capacity') as 
 const formVehicleOdometer = document.getElementById('form-vehicle-odometer') as HTMLInputElement;
 const formVehicleCost = document.getElementById('form-vehicle-cost') as HTMLInputElement;
 const formVehicleStatus = document.getElementById('form-vehicle-status') as HTMLSelectElement;
+const formVehicleRegion = document.getElementById('form-vehicle-region') as HTMLInputElement;
 const addVehicleBtn = document.getElementById('add-vehicle-btn') as HTMLButtonElement;
 const vehicleFormCancelBtn = document.getElementById('vehicle-form-cancel-btn') as HTMLButtonElement;
 const vehicleModalCloseBtn = document.getElementById('vehicle-modal-close-btn') as HTMLButtonElement;
@@ -177,12 +201,12 @@ async function seedMockData() {
   farFuture.setFullYear(farFuture.getFullYear() + 2);
 
   const nearFuture = new Date();
-  nearFuture.setDate(nearFuture.getDate() + 10); // expiring in 10 days
+  nearFuture.setDate(nearFuture.getDate() + 10);
 
   const pastDate = new Date();
-  pastDate.setDate(pastDate.getDate() - 30); // expired 30 days ago
+  pastDate.setDate(pastDate.getDate() - 30);
 
-  // Seed Drivers with professional names, CDL formats, and real phone structures
+  // Seed Drivers with Regions
   const driversList: CreateDriverInput[] = [
     {
       name: 'Franklin Vance',
@@ -192,6 +216,7 @@ async function seedMockData() {
       contactNumber: '+1-512-555-0122',
       safetyScore: 98,
       status: DriverStatus.Available,
+      region: 'Texas',
     },
     {
       name: 'Sarah Jenkins',
@@ -201,6 +226,7 @@ async function seedMockData() {
       contactNumber: '+1-212-555-0182',
       safetyScore: 95,
       status: DriverStatus.Available,
+      region: 'California',
     },
     {
       name: 'Marcus Castillo',
@@ -210,6 +236,7 @@ async function seedMockData() {
       contactNumber: '+1-415-555-0144',
       safetyScore: 88,
       status: DriverStatus.Available,
+      region: 'California',
     },
     {
       name: 'Timothy Cole',
@@ -219,6 +246,7 @@ async function seedMockData() {
       contactNumber: '+1-305-555-0188',
       safetyScore: 72,
       status: DriverStatus.OffDuty,
+      region: 'Florida',
     },
     {
       name: 'Clara Oswald',
@@ -228,6 +256,7 @@ async function seedMockData() {
       contactNumber: '+1-312-555-0199',
       safetyScore: 52,
       status: DriverStatus.Available,
+      region: 'New York',
     },
   ];
 
@@ -235,7 +264,7 @@ async function seedMockData() {
     await driverService.createDriver(drv);
   }
 
-  // Seed Vehicles with standard cargo capacities, odometers, and costs
+  // Seed Vehicles with Regions
   const vehiclesList: CreateVehicleInput[] = [
     {
       registrationNumber: 'TX-TRK-7711',
@@ -245,6 +274,7 @@ async function seedMockData() {
       maxLoadCapacity: 12000,
       odometer: 145200,
       acquisitionCost: 115000,
+      region: 'Texas',
     },
     {
       registrationNumber: 'CA-TRK-8840',
@@ -254,6 +284,7 @@ async function seedMockData() {
       maxLoadCapacity: 8000,
       odometer: 89600,
       acquisitionCost: 95000,
+      region: 'California',
     },
     {
       registrationNumber: 'IL-TRK-1102',
@@ -263,6 +294,7 @@ async function seedMockData() {
       maxLoadCapacity: 10000,
       odometer: 201300,
       acquisitionCost: 135000,
+      region: 'Illinois',
     },
     {
       registrationNumber: 'NY-VAN-5529',
@@ -272,6 +304,7 @@ async function seedMockData() {
       maxLoadCapacity: 3500,
       odometer: 23100,
       acquisitionCost: 45000,
+      region: 'New York',
     },
   ];
 
@@ -279,7 +312,7 @@ async function seedMockData() {
     await vehicleService.createVehicle(v);
   }
 
-  // Seed initial professional logistics trips
+  // Seed initial trips
   const allDrivers = await driverService.getAllDrivers();
   const vance = allDrivers.find(d => d.name === 'Franklin Vance');
   const allVehicles = await vehicleService.getAllVehicles();
@@ -293,8 +326,9 @@ async function seedMockData() {
       destination: 'Dallas Logistics Center 4',
       driverId: vance.id,
       vehicleId: trk7711.id,
-      cargoWeight: 9000, // 75% load capacity
+      cargoWeight: 9000,
       plannedDistance: 390,
+      region: 'Texas',
     });
   }
 
@@ -304,15 +338,165 @@ async function seedMockData() {
       destination: 'Phoenix Distribution Terminal',
       driverId: jenkins.id,
       vehicleId: trk8840.id,
-      cargoWeight: 4000, // 50% load capacity
+      cargoWeight: 4000,
       plannedDistance: 590,
+      region: 'California',
     });
-    // Dispatch immediately
     await tripService.dispatchTrip(activeTrip.id);
   }
 }
 
 // --- Render Operations ---
+
+async function renderDashboardView() {
+  const typeFilterVal = dashboardTypeFilter.value;
+  const statusFilterVal = dashboardStatusFilter.value;
+  const regionFilterVal = dashboardRegionFilter.value;
+
+  const drivers = await driverService.getAllDrivers();
+  const vehicles = await vehicleService.getAllVehicles();
+  const trips = await tripService.getAllTrips();
+
+  // Populate dynamic filters if not already set
+  const uniqueTypes = Array.from(new Set(vehicles.map(v => v.type)));
+  const uniqueRegions = Array.from(new Set([
+    ...drivers.map(d => d.region),
+    ...vehicles.map(v => v.region),
+    ...trips.map(t => t.region)
+  ]));
+
+  // Re-render select lists while preserving current selections
+  const prevType = dashboardTypeFilter.value;
+  dashboardTypeFilter.innerHTML = '<option value="ALL">All Types</option>' +
+    uniqueTypes.map(t => `<option value="${escapeHtml(t)}">${escapeHtml(t)}</option>`).join('');
+  dashboardTypeFilter.value = prevType || 'ALL';
+
+  const prevRegion = dashboardRegionFilter.value;
+  dashboardRegionFilter.innerHTML = '<option value="ALL">All Regions</option>' +
+    uniqueRegions.map(r => `<option value="${escapeHtml(r)}">${escapeHtml(r)}</option>`).join('');
+  dashboardRegionFilter.value = prevRegion || 'ALL';
+
+  // Apply filters to calculate metrics
+  let filteredVehicles = vehicles;
+  let filteredTrips = trips;
+  let filteredDrivers = drivers;
+
+  if (typeFilterVal !== 'ALL') {
+    filteredVehicles = filteredVehicles.filter(v => v.type === typeFilterVal);
+    // filter trips associated with those vehicles
+    filteredTrips = filteredTrips.filter(t => {
+      const v = vehicles.find(vh => vh.id === t.vehicleId);
+      return v ? v.type === typeFilterVal : false;
+    });
+  }
+
+  if (statusFilterVal !== 'ALL') {
+    filteredVehicles = filteredVehicles.filter(v => v.status === statusFilterVal);
+    filteredTrips = filteredTrips.filter(t => {
+      const v = vehicles.find(vh => vh.id === t.vehicleId);
+      return v ? v.status === statusFilterVal : false;
+    });
+  }
+
+  if (regionFilterVal !== 'ALL') {
+    filteredVehicles = filteredVehicles.filter(v => v.region === regionFilterVal);
+    filteredTrips = filteredTrips.filter(t => t.region === regionFilterVal);
+    filteredDrivers = filteredDrivers.filter(d => d.region === regionFilterVal);
+  }
+
+  // Calculate KPIs
+  const activeVehCount = filteredVehicles.filter(v => v.status === VehicleStatus.OnTrip).length;
+  const availVehCount = filteredVehicles.filter(v => v.status === VehicleStatus.Available).length;
+  const inshopVehCount = filteredVehicles.filter(v => v.status === VehicleStatus.InShop).length;
+  
+  const activeTripsCount = filteredTrips.filter(t => t.status === TripStatus.Dispatched).length;
+  const pendingTripsCount = filteredTrips.filter(t => t.status === TripStatus.Draft).length;
+  
+  const driversOnDutyCount = filteredDrivers.filter(d => d.status === DriverStatus.Available || d.status === DriverStatus.OnTrip).length;
+  
+  const totalFleet = filteredVehicles.length;
+  const utilizationRate = totalFleet > 0 ? Math.round((activeVehCount / totalFleet) * 100) : 0;
+
+  // Render KPI values
+  kpiActiveVehicles.textContent = activeVehCount.toString();
+  kpiAvailableVehicles.textContent = availVehCount.toString();
+  kpiInshopVehicles.textContent = inshopVehCount.toString();
+  kpiActiveTrips.textContent = activeTripsCount.toString();
+  kpiPendingTrips.textContent = pendingTripsCount.toString();
+  kpiDriversOnduty.textContent = driversOnDutyCount.toString();
+  kpiFleetUtilization.textContent = `${utilizationRate}%`;
+
+  // Draw SVG Dial progress
+  const radius = 70;
+  const circumference = 2 * Math.PI * radius; // ~440
+  const offset = circumference - (utilizationRate / 100) * circumference;
+  dialProgressCircle.style.strokeDasharray = `${circumference}`;
+  dialProgressCircle.style.strokeDashoffset = `${offset}`;
+  dialPercentageLabel.textContent = `${utilizationRate}%`;
+
+  // Render Active Transit Routes
+  const activeTrips = filteredTrips.filter(t => t.status === TripStatus.Dispatched);
+  dashboardActiveTripsList.innerHTML = '';
+
+  if (activeTrips.length === 0) {
+    dashboardActiveTripsList.innerHTML = `
+      <tr class="empty-state-row">
+        <td colspan="5">
+          <div class="empty-state" style="padding: 20px;">
+            <i data-lucide="route" style="width: 24px; height: 24px;"></i>
+            <span>No active routes currently running.</span>
+          </div>
+        </td>
+      </tr>
+    `;
+    lucide.createIcons();
+    return;
+  }
+
+  for (const trip of activeTrips) {
+    const row = document.createElement('tr');
+    
+    let driverName = 'Unknown';
+    try {
+      const drv = await driverService.getDriver(trip.driverId);
+      driverName = drv.name;
+    } catch {}
+
+    let maxCap = 1;
+    try {
+      const v = await vehicleService.getVehicle(trip.vehicleId);
+      maxCap = v.maxLoadCapacity;
+    } catch {}
+
+    const capacityPct = Math.min(100, Math.round((trip.cargoWeight / maxCap) * 100));
+
+    row.innerHTML = `
+      <td>
+        <div class="route-path" style="font-size: 12px; font-weight: 600;">
+          <span>${escapeHtml(trip.source)}</span>
+          <span class="route-arrow"><i data-lucide="arrow-right"></i></span>
+          <span>${escapeHtml(trip.destination)}</span>
+        </div>
+      </td>
+      <td>
+        <span class="license-category-badge">${escapeHtml(trip.region)}</span>
+      </td>
+      <td>
+        <span>${escapeHtml(driverName)}</span>
+      </td>
+      <td>
+        <span style="font-weight: 700;">${capacityPct}%</span>
+        <span style="font-size: 10px; color: var(--text-muted); display: block;">${trip.cargoWeight.toLocaleString()} kg</span>
+      </td>
+      <td>
+        <span>${trip.plannedDistance} km</span>
+      </td>
+    `;
+    dashboardActiveTripsList.appendChild(row);
+  }
+
+  lucide.createIcons();
+}
 
 async function renderDriversView() {
   const query = searchInput.value.toLowerCase().trim();
@@ -322,13 +506,11 @@ async function renderDriversView() {
 
   const allDrivers = await driverService.getAllDrivers();
 
-  // Update Metrics
   metricTotalDrivers.textContent = allDrivers.length.toString();
   metricAvailableDrivers.textContent = allDrivers.filter(d => d.status === DriverStatus.Available).length.toString();
   metricOnTripDrivers.textContent = allDrivers.filter(d => d.status === DriverStatus.OnTrip).length.toString();
   metricSuspendedDrivers.textContent = allDrivers.filter(d => d.status === DriverStatus.Suspended).length.toString();
 
-  // License expiry checks
   const report = await driverService.getDriversLicenseStatusReport(30);
   if (report.expired.length > 0 || report.expiringSoon.length > 0) {
     expiryAlertBanner.classList.remove('hidden');
@@ -346,7 +528,6 @@ async function renderDriversView() {
     expiryAlertBanner.classList.add('hidden');
   }
 
-  // Filter list
   let filtered = allDrivers;
 
   if (query) {
@@ -429,7 +610,7 @@ async function renderDriversView() {
           <div class="driver-initials">${initials}</div>
           <div class="driver-meta">
             <span class="driver-fullname">${escapeHtml(driver.name)}</span>
-            <span class="driver-id-sub">ID: ${driver.id.substring(0, 8)}...</span>
+            <span class="driver-id-sub">ID: ${driver.id.substring(0, 8)}... | ${escapeHtml(driver.region)}</span>
           </div>
         </div>
       </td>
@@ -507,13 +688,11 @@ async function renderVehiclesView() {
 
   const allVehicles = await vehicleService.getAllVehicles();
 
-  // Update Metrics
   metricTotalVehicles.textContent = allVehicles.length.toString();
   metricAvailableVehicles.textContent = allVehicles.filter(v => v.status === VehicleStatus.Available).length.toString();
   metricInshopVehicles.textContent = allVehicles.filter(v => v.status === VehicleStatus.InShop).length.toString();
   metricRetiredVehicles.textContent = allVehicles.filter(v => v.status === VehicleStatus.Retired).length.toString();
 
-  // Filter list
   let filtered = allVehicles;
 
   if (query) {
@@ -530,7 +709,7 @@ async function renderVehiclesView() {
     filtered = filtered.filter(v => v.type === typeSel);
   }
 
-  // Update Dynamic Type Filter Dropdown list to match existing database types
+  // Update Dynamic Type Filter Dropdown list
   const existingTypes = Array.from(new Set(allVehicles.map(v => v.type)));
   const currentSel = typeVehicleFilter.value;
   typeVehicleFilter.innerHTML = '<option value="ALL">All Types</option>' + 
@@ -569,7 +748,7 @@ async function renderVehiclesView() {
           <div class="driver-initials"><i data-lucide="truck" style="width: 16px; height: 16px;"></i></div>
           <div class="driver-meta">
             <span class="driver-fullname">${escapeHtml(vehicle.nameModel)}</span>
-            <span class="driver-id-sub">Reg: ${escapeHtml(vehicle.registrationNumber)}</span>
+            <span class="driver-id-sub">Reg: ${escapeHtml(vehicle.registrationNumber)} | ${escapeHtml(vehicle.region)}</span>
           </div>
         </div>
       </td>
@@ -639,13 +818,11 @@ async function renderTripsView() {
 
   const allTrips = await tripService.getAllTrips();
 
-  // Update Metrics
   metricTotalTrips.textContent = allTrips.length.toString();
   metricDispatchedTrips.textContent = allTrips.filter(t => t.status === TripStatus.Dispatched).length.toString();
   metricCompletedTrips.textContent = allTrips.filter(t => t.status === TripStatus.Completed).length.toString();
   metricCancelledTrips.textContent = allTrips.filter(t => t.status === TripStatus.Cancelled).length.toString();
 
-  // Filter list
   let filtered = allTrips;
 
   if (query) {
@@ -675,11 +852,9 @@ async function renderTripsView() {
     return;
   }
 
-  // Render rows
   for (const trip of filtered) {
     const row = document.createElement('tr');
     
-    // Fetch associated driver name & vehicle plate
     let driverName = 'Unknown Driver';
     try {
       const drv = await driverService.getDriver(trip.driverId);
@@ -696,19 +871,16 @@ async function renderTripsView() {
       maxCap = v.maxLoadCapacity;
     } catch {}
 
-    // Cargo Capacity Utilization Gauge Calculations
     const capacityPct = Math.min(100, Math.round((trip.cargoWeight / maxCap) * 100));
     let utilClass = 'score-excellent';
-    if (capacityPct > 90) utilClass = 'score-critical'; // warning if overloaded/nearly full
+    if (capacityPct > 90) utilClass = 'score-critical';
     else if (capacityPct > 70) utilClass = 'score-good';
 
-    // Status pill
     let statusClass = 'draft';
     if (trip.status === TripStatus.Dispatched) statusClass = 'dispatched';
     else if (trip.status === TripStatus.Completed) statusClass = 'completed';
     else if (trip.status === TripStatus.Cancelled) statusClass = 'cancelled';
 
-    // Actions enabled state
     const isDraft = trip.status === TripStatus.Draft;
     const isDispatched = trip.status === TripStatus.Dispatched;
     const isTerminal = trip.status === TripStatus.Completed || trip.status === TripStatus.Cancelled;
@@ -721,7 +893,7 @@ async function renderTripsView() {
             <span class="route-arrow"><i data-lucide="arrow-right"></i></span>
             <span>${escapeHtml(trip.destination)}</span>
           </div>
-          <span class="route-subtext">ID: ${trip.id.substring(0, 8)}...</span>
+          <span class="route-subtext">ID: ${trip.id.substring(0, 8)}... | ${escapeHtml(trip.region)}</span>
         </div>
       </td>
       <td>
@@ -822,6 +994,7 @@ async function renderTripsView() {
 }
 
 async function renderDashboard() {
+  await renderDashboardView();
   await renderDriversView();
   await renderVehiclesView();
   await renderTripsView();
@@ -837,16 +1010,24 @@ function escapeHtml(str: string): string {
 }
 
 // --- Tab Switching Logic ---
-function switchTab(tab: 'drivers' | 'trips' | 'vehicles') {
+function switchTab(tab: 'dashboard' | 'drivers' | 'trips' | 'vehicles') {
   activeTab = tab;
+  navDashboard.classList.remove('active');
   navDrivers.classList.remove('active');
   navTrips.classList.remove('active');
   navVehicles.classList.remove('active');
+
+  dashboardTabContent.classList.add('hidden');
   driversTabContent.classList.add('hidden');
   tripsTabContent.classList.add('hidden');
   vehiclesTabContent.classList.add('hidden');
 
-  if (tab === 'drivers') {
+  if (tab === 'dashboard') {
+    navDashboard.classList.add('active');
+    dashboardTabContent.classList.remove('hidden');
+    mainTitle.textContent = 'Operations Dashboard';
+    mainSubtitle.textContent = 'Real-time overview of fleet activities, driver availability, and KPIs.';
+  } else if (tab === 'drivers') {
     navDrivers.classList.add('active');
     driversTabContent.classList.remove('hidden');
     mainTitle.textContent = 'Driver Management';
@@ -865,6 +1046,7 @@ function switchTab(tab: 'drivers' | 'trips' | 'vehicles') {
   lucide.createIcons();
 }
 
+navDashboard.addEventListener('click', (e) => { e.preventDefault(); switchTab('dashboard'); });
 navDrivers.addEventListener('click', (e) => { e.preventDefault(); switchTab('drivers'); });
 navTrips.addEventListener('click', (e) => { e.preventDefault(); switchTab('trips'); });
 navVehicles.addEventListener('click', (e) => { e.preventDefault(); switchTab('vehicles'); });
@@ -877,6 +1059,7 @@ function openAddModal() {
   formDriverId.value = '';
   sliderVal.textContent = '100';
   formSafety.value = '100';
+  formRegion.value = 'Texas';
   
   formSafetyLogSection.classList.add('hidden');
   
@@ -901,6 +1084,7 @@ async function openEditModal(id: string) {
     formContact.value = driver.contactNumber;
     formLicenseNum.value = driver.licenseNumber;
     formLicenseCat.value = driver.licenseCategory;
+    formRegion.value = driver.region;
     
     const exp = driver.licenseExpiryDate;
     const year = exp.getFullYear();
@@ -969,6 +1153,7 @@ async function handleDriverFormSubmit(e: SubmitEvent) {
   const expiryVal = formExpiry.value;
   const statusVal = formStatus.value as DriverStatus;
   const safetyVal = parseInt(formSafety.value, 10);
+  const regionVal = formRegion.value;
 
   let hasMissing = false;
   if (!nameVal) { displayDriverFieldError('name', 'Name is required'); hasMissing = true; }
@@ -976,6 +1161,7 @@ async function handleDriverFormSubmit(e: SubmitEvent) {
   if (!licenseNumVal) { displayDriverFieldError('license-num', 'License number is required'); hasMissing = true; }
   if (!licenseCatVal) { displayDriverFieldError('license-cat', 'License category is required'); hasMissing = true; }
   if (!expiryVal) { displayDriverFieldError('expiry', 'Expiry date is required'); hasMissing = true; }
+  if (!regionVal) { displayDriverFieldError('region', 'Region is required'); hasMissing = true; }
   
   if (hasMissing) return;
 
@@ -991,6 +1177,7 @@ async function handleDriverFormSubmit(e: SubmitEvent) {
         licenseExpiryDate: expiryDate,
         status: statusVal,
         safetyScore: safetyVal,
+        region: regionVal,
       };
       await driverService.updateDriver(editingDriverId, updateData);
     } else {
@@ -1002,6 +1189,7 @@ async function handleDriverFormSubmit(e: SubmitEvent) {
         licenseExpiryDate: expiryDate,
         status: statusVal,
         safetyScore: safetyVal,
+        region: regionVal,
       };
       await driverService.createDriver(createData);
     }
@@ -1106,6 +1294,7 @@ function openVehicleAddModal() {
   vehicleForm.reset();
   formVehicleId.value = '';
   formVehicleReg.removeAttribute('disabled');
+  formVehicleRegion.value = 'Texas';
   
   clearVehicleErrors();
   vehicleModal.classList.remove('hidden');
@@ -1120,7 +1309,7 @@ async function openVehicleEditModal(id: string) {
     const vehicle = await vehicleService.getVehicle(id);
     formVehicleId.value = vehicle.id;
     formVehicleReg.value = vehicle.registrationNumber;
-    formVehicleReg.setAttribute('disabled', 'true'); // lock key field
+    formVehicleReg.setAttribute('disabled', 'true');
     
     formVehicleModel.value = vehicle.nameModel;
     formVehicleType.value = vehicle.type;
@@ -1128,6 +1317,7 @@ async function openVehicleEditModal(id: string) {
     formVehicleOdometer.value = vehicle.odometer.toString();
     formVehicleCost.value = vehicle.acquisitionCost.toString();
     formVehicleStatus.value = vehicle.status;
+    formVehicleRegion.value = vehicle.region;
 
     vehicleModal.classList.remove('hidden');
   } catch (err: any) {
@@ -1165,6 +1355,7 @@ async function handleVehicleFormSubmit(e: SubmitEvent) {
   const odometerVal = parseInt(formVehicleOdometer.value, 10);
   const costVal = parseInt(formVehicleCost.value, 10);
   const statusVal = formVehicleStatus.value as VehicleStatus;
+  const regionVal = formVehicleRegion.value;
 
   let hasMissing = false;
   if (!regVal) { displayVehicleFieldError('reg', 'Registration is required'); hasMissing = true; }
@@ -1173,6 +1364,7 @@ async function handleVehicleFormSubmit(e: SubmitEvent) {
   if (isNaN(capacityVal)) { displayVehicleFieldError('capacity', 'Capacity is required'); hasMissing = true; }
   if (isNaN(odometerVal)) { displayVehicleFieldError('odometer', 'Odometer is required'); hasMissing = true; }
   if (isNaN(costVal)) { displayVehicleFieldError('cost', 'Acquisition cost is required'); hasMissing = true; }
+  if (!regionVal) { displayVehicleFieldError('region', 'Region is required'); hasMissing = true; }
 
   if (hasMissing) return;
 
@@ -1185,6 +1377,7 @@ async function handleVehicleFormSubmit(e: SubmitEvent) {
         odometer: odometerVal,
         acquisitionCost: costVal,
         status: statusVal,
+        region: regionVal,
       });
     } else {
       await vehicleService.createVehicle({
@@ -1195,6 +1388,7 @@ async function handleVehicleFormSubmit(e: SubmitEvent) {
         odometer: odometerVal,
         acquisitionCost: costVal,
         status: statusVal,
+        region: regionVal,
       });
     }
 
@@ -1228,7 +1422,7 @@ async function openOdometerModal(id: string) {
     odometerVehicleReg.textContent = vehicle.registrationNumber;
     currentOdometerLabel.textContent = `${vehicle.odometer.toLocaleString()} km`;
     newOdometerInput.value = vehicle.odometer.toString();
-    newOdometerInput.min = vehicle.odometer.toString(); // Enforce >= current in HTML
+    newOdometerInput.min = vehicle.odometer.toString();
     
     odometerModal.classList.remove('hidden');
   } catch (err: any) {
@@ -1272,7 +1466,6 @@ async function openTripModal() {
   tripForm.reset();
   clearTripErrors();
 
-  // Populate dynamic dropdowns
   const allDrivers = await driverService.getAllDrivers();
   const availableDrivers = allDrivers.filter(d => d.status === DriverStatus.Available);
   tripFormDriver.innerHTML = '<option value="">-- Choose Driver --</option>' +
@@ -1283,6 +1476,7 @@ async function openTripModal() {
   tripFormVehicle.innerHTML = '<option value="">-- Choose Vehicle --</option>' +
     availableVehicles.map(v => `<option value="${v.id}">${escapeHtml(v.registrationNumber)} - ${escapeHtml(v.nameModel)} (Capacity: ${v.maxLoadCapacity.toLocaleString()} kg)</option>`).join('');
 
+  tripFormRegion.value = 'Texas'; // default
   tripModal.classList.remove('hidden');
 }
 
@@ -1315,6 +1509,7 @@ async function handleTripFormSubmit(e: SubmitEvent) {
   const distanceVal = parseFloat(tripFormDistance.value);
   const driverIdVal = tripFormDriver.value;
   const vehicleIdVal = tripFormVehicle.value;
+  const regionVal = tripFormRegion.value;
 
   let hasMissing = false;
   if (!sourceVal) { displayTripFieldError('source', 'Source location is required'); hasMissing = true; }
@@ -1323,6 +1518,7 @@ async function handleTripFormSubmit(e: SubmitEvent) {
   if (isNaN(distanceVal)) { displayTripFieldError('distance', 'Planned distance is required'); hasMissing = true; }
   if (!driverIdVal) { displayTripFieldError('driver', 'Driver selection is required'); hasMissing = true; }
   if (!vehicleIdVal) { displayTripFieldError('vehicle', 'Vehicle selection is required'); hasMissing = true; }
+  if (!regionVal) { displayTripFieldError('region', 'Region is required'); hasMissing = true; }
 
   if (hasMissing) return;
 
@@ -1334,6 +1530,7 @@ async function handleTripFormSubmit(e: SubmitEvent) {
       plannedDistance: distanceVal,
       driverId: driverIdVal,
       vehicleId: vehicleIdVal,
+      region: regionVal,
     });
 
     closeTripModal();
@@ -1352,6 +1549,11 @@ async function handleTripFormSubmit(e: SubmitEvent) {
 }
 
 // --- Bind Event Listeners ---
+
+// Dashboard Filter Events
+dashboardTypeFilter.addEventListener('change', renderDashboard);
+dashboardStatusFilter.addEventListener('change', renderDashboard);
+dashboardRegionFilter.addEventListener('change', renderDashboard);
 
 // Driver Events
 addDriverBtn.addEventListener('click', openAddModal);
@@ -1417,8 +1619,20 @@ searchVehicleInput.addEventListener('input', renderDashboard);
 statusVehicleFilter.addEventListener('change', renderDashboard);
 typeVehicleFilter.addEventListener('change', renderDashboard);
 
+// Automatically set trip region to match chosen vehicle's home region
+tripFormVehicle.addEventListener('change', async () => {
+  const val = tripFormVehicle.value;
+  if (val) {
+    try {
+      const v = await vehicleService.getVehicle(val);
+      tripFormRegion.value = v.region;
+    } catch {}
+  }
+});
+
 // --- Initialization Entry Point ---
 (async () => {
   await seedMockData();
   await renderDashboard();
+  switchTab('dashboard'); // Start on overview dashboard tab
 })();

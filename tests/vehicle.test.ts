@@ -119,6 +119,21 @@ describe('Vehicle Registry', () => {
         (err: VehicleValidationError) => err.field === 'acquisitionCost'
       );
     });
+
+    test('should reject invalid regions', async () => {
+      await assert.rejects(
+        service.createVehicle({
+          registrationNumber: 'TX-101',
+          nameModel: 'Volvo Truck',
+          type: 'Heavy Truck',
+          maxLoadCapacity: 10000,
+          odometer: 150,
+          acquisitionCost: 85000,
+          region: 'X', // too short
+        }),
+        (err: any) => err instanceof VehicleValidationError && err.field === 'region'
+      );
+    });
   });
 
   describe('Vehicle Operations & Constraints', () => {

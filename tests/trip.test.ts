@@ -84,6 +84,23 @@ describe('Trip Management', () => {
         (err: any) => err instanceof TripValidationError && err.field === 'destination'
       );
     });
+
+    test('should reject invalid regions', async () => {
+      const { tripService, driver, vehicle } = await setupServices();
+
+      await assert.rejects(
+        tripService.createTrip({
+          source: 'Warehouse A',
+          destination: 'Client B',
+          driverId: driver.id,
+          vehicleId: vehicle.id,
+          cargoWeight: 1000,
+          plannedDistance: 120,
+          region: 'X', // too short
+        }),
+        (err: any) => err instanceof TripValidationError && err.field === 'region'
+      );
+    });
   });
 
   describe('Trip Creation Constraints', () => {

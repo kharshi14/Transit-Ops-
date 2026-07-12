@@ -1219,3 +1219,25 @@ body {
   background-color: var(--color-danger);
 }
 
+/* --- Dashboard Overview Styles --- */
+.glow-card {
+  box-shadow: 0 0 15px var(--color-primary-glow), var(--shadow-lg) !important;
+  border: 1px solid rgba(59, 130, 246, 0.25) !important;
+}
+
+.utilization-dial-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.label-ontrip {
+  background-color: rgba(99, 102, 241, 0.15) !important;
+  color: var(--color-indigo) !important;
+}
+
+.label-draft {
+  background-color: rgba(148, 163, 184, 0.15) !important;
+  color: var(--text-secondary) !important;
+}
+

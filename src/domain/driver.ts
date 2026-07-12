@@ -62,12 +62,21 @@ export function validateDriverStatus(status: DriverStatus): void {
   }
 }
 
+export function validateRegion(region: string): void {
+  if (!region || typeof region !== 'string' || region.trim().length < 2) {
+    throw new DriverValidationError('region', 'Region must be a non-empty string of at least 2 characters.');
+  }
+}
+
 export function validateCreateDriver(input: CreateDriverInput): void {
   validateName(input.name);
   validateLicenseNumber(input.licenseNumber);
   validateLicenseCategory(input.licenseCategory);
   validateLicenseExpiryDate(input.licenseExpiryDate);
   validateContactNumber(input.contactNumber);
+  if (input.region !== undefined) {
+    validateRegion(input.region);
+  }
   if (input.safetyScore !== undefined) {
     validateSafetyScore(input.safetyScore);
   }
@@ -84,4 +93,5 @@ export function validateUpdateDriver(input: UpdateDriverInput): void {
   if (input.contactNumber !== undefined) validateContactNumber(input.contactNumber);
   if (input.safetyScore !== undefined) validateSafetyScore(input.safetyScore);
   if (input.status !== undefined) validateDriverStatus(input.status);
+  if (input.region !== undefined) validateRegion(input.region);
 }
