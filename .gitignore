@@ -1,3 +1,23 @@
+# Dependency directories
+node_modules/
 client/node_modules/
 server/node_modules/
+
+# Environment configurations
 server/.env
+
+# Production build outputs
+dist/
+
+# Gemini AI workspace configurations
+.gemini/
+.agents/
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# OS metadata
+.DS_Store
+Thumbs.db
