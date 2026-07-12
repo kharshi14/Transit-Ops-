@@ -264,6 +264,12 @@ updateClock();
 
 // --- Seed Mock Data ---
 async function seedMockData() {
+  const drivers = await driverService.getAllDrivers();
+  const vehicles = await vehicleService.getAllVehicles();
+  if (drivers.length > 0 || vehicles.length > 0) {
+    return; // Already populated from localStorage, skip seeding!
+  }
+
   const farFuture = new Date();
   farFuture.setFullYear(farFuture.getFullYear() + 2);
 
