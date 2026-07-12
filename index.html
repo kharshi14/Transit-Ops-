@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Transit-Ops | Driver Management</title>
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Style Sheet -->
+  <link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Sidebar Navigation -->
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-logo">
+          <i data-lucide="bus"></i>
+        </div>
+        <span class="brand-name">Transit-Ops</span>
+      </div>
+      <nav class="nav-menu">
+        <a href="#" id="nav-drivers" class="nav-item active">
+          <i data-lucide="users"></i>
+          <span>Drivers</span>
+        </a>
+        <a href="#" id="nav-trips" class="nav-item">
+          <i data-lucide="navigation"></i>
+          <span>Trips</span>
+        </a>
+        <a href="#" class="nav-item disabled" title="Coming Soon">
+          <i data-lucide="truck"></i>
+          <span>Vehicles</span>
+        </a>
+        <a href="#" class="nav-item disabled" title="Coming Soon">
+          <i data-lucide="map"></i>
+          <span>Routes</span>
+        </a>
+        <a href="#" class="nav-item disabled" title="Coming Soon">
+          <i data-lucide="calendar"></i>
+          <span>Schedules</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <div class="user-profile">
+          <div class="user-avatar">SO</div>
+          <div class="user-info">
+            <span class="user-name">Ops Officer</span>
+            <span class="user-role">Administrator</span>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Header -->
+      <header class="content-header">
+        <div class="header-title-area">
+          <h1 id="main-title">Driver Management</h1>
+          <p id="main-subtitle" class="subtitle">Monitor status, track safety scores, and audit licenses.</p>
+        </div>
+        <div class="header-actions">
+          <div class="time-widget">
+            <i data-lucide="clock"></i>
+            <span id="current-time">11:48 AM</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- License Expiry Alert Banner -->
+      <div id="expiry-alert-banner" class="alert-banner hidden">
+        <div class="alert-content">
+          <i data-lucide="alert-triangle" class="alert-icon"></i>
+          <div class="alert-text">
+            <strong id="alert-title">License Warning</strong>
+            <span id="alert-description">One or more drivers have expired or expiring licenses.</span>
+          </div>
+        </div>
+        <button id="close-alert-btn" class="close-alert-btn">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+
+      <!-- DRIVERS TAB CONTENT -->
+      <div id="drivers-tab-content" class="tab-content">
+        <!-- Metrics Panel -->
+        <section class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Total Drivers</span>
+              <h2 id="metric-total-drivers" class="metric-value">0</h2>
+            </div>
+            <div class="metric-icon-box blue">
+              <i data-lucide="users"></i>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Available</span>
+              <h2 id="metric-available-drivers" class="metric-value green-text">0</h2>
+            </div>
+            <div class="metric-icon-box green">
+              <i data-lucide="user-check"></i>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">On Trip</span>
+              <h2 id="metric-ontrip-drivers" class="metric-value indigo-text">0</h2>
+            </div>
+            <div class="metric-icon-box indigo">
+              <i data-lucide="navigation"></i>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Suspended</span>
+              <h2 id="metric-suspended-drivers" class="metric-value red-text">0</h2>
+            </div>
+            <div class="metric-icon-box red">
+              <i data-lucide="user-x"></i>
+            </div>
+          </div>
+        </section>
+
+        <!-- Controls & Filter Section -->
+        <section class="controls-panel">
+          <div class="search-box">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="search-input" placeholder="Search by name or license number...">
+          </div>
+          <div class="filter-group">
+            <div class="select-wrapper">
+              <i data-lucide="filter" class="select-icon"></i>
+              <select id="status-filter">
+                <option value="ALL">All Statuses</option>
+                <option value="Available">Available</option>
+                <option value="On Trip">On Trip</option>
+                <option value="Off Duty">Off Duty</option>
+                <option value="Suspended">Suspended</option>
+              </select>
+            </div>
+            <div class="select-wrapper">
+              <i data-lucide="award" class="select-icon"></i>
+              <select id="safety-filter">
+                <option value="ALL">All Safety Scores</option>
+                <option value="HIGH">Excellent (90+)</option>
+                <option value="MEDIUM">Good (70-89)</option>
+                <option value="LOW">Critical (&lt; 70)</option>
+              </select>
+            </div>
+            <div class="select-wrapper">
+              <i data-lucide="calendar-clock" class="select-icon"></i>
+              <select id="expiry-filter">
+                <option value="ALL">All License Expiries</option>
+                <option value="EXPIRED">Expired</option>
+                <option value="EXPIRING">Expiring Soon (30d)</option>
+                <option value="VALID">Valid</option>
+              </select>
+            </div>
+          </div>
+          <button id="add-driver-btn" class="btn btn-primary">
+            <i data-lucide="user-plus"></i>
+            <span>Add Driver</span>
+          </button>
+        </section>
+
+        <!-- Driver Table Container -->
+        <section class="table-card">
+          <div class="table-responsive">
+            <table class="driver-table">
+              <thead>
+                <tr>
+                  <th>Driver Name</th>
+                  <th>License Info</th>
+                  <th>Expiry Date</th>
+                  <th>Contact</th>
+                  <th>Safety Score</th>
+                  <th>Status</th>
+                  <th class="actions-header">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="driver-table-body">
+                <tr class="empty-state-row">
+                  <td colspan="7">
+                    <div class="loading-state">
+                      <div class="spinner"></div>
+                      <span>Loading driver profiles...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+
+      <!-- TRIPS TAB CONTENT -->
+      <div id="trips-tab-content" class="tab-content hidden">
+        <!-- Metrics Panel -->
+        <section class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Total Trips</span>
+              <h2 id="metric-total-trips" class="metric-value">0</h2>
+            </div>
+            <div class="metric-icon-box blue">
+              <i data-lucide="route"></i>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Dispatched</span>
+              <h2 id="metric-dispatched-trips" class="metric-value indigo-text">0</h2>
+            </div>
+            <div class="metric-icon-box indigo">
+              <i data-lucide="navigation"></i>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Completed</span>
+              <h2 id="metric-completed-trips" class="metric-value green-text">0</h2>
+            </div>
+            <div class="metric-icon-box green">
+              <i data-lucide="check-circle-2"></i>
+            </div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-info">
+              <span class="metric-label">Cancelled</span>
+              <h2 id="metric-cancelled-trips" class="metric-value red-text">0</h2>
+            </div>
+            <div class="metric-icon-box red">
+              <i data-lucide="x-circle"></i>
+            </div>
+          </div>
+        </section>
+
+        <!-- Controls & Filter Section -->
+        <section class="controls-panel">
+          <div class="search-box">
+            <i data-lucide="search" class="search-icon"></i>
+            <input type="text" id="search-trip-input" placeholder="Search by route (source/destination)...">
+          </div>
+          <div class="filter-group">
+            <div class="select-wrapper">
+              <i data-lucide="filter" class="select-icon"></i>
+              <select id="status-trip-filter">
+                <option value="ALL">All Statuses</option>
+                <option value="Draft">Draft</option>
+                <option value="Dispatched">Dispatched</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+            </div>
+          </div>
+          <button id="add-trip-btn" class="btn btn-primary">
+            <i data-lucide="plus-circle"></i>
+            <span>Create Trip</span>
+          </button>
+        </section>
+
+        <!-- Trips Table Container -->
+        <section class="table-card">
+          <div class="table-responsive">
+            <table class="driver-table">
+              <thead>
+                <tr>
+                  <th>Trip Route</th>
+                  <th>Driver Assigned</th>
+                  <th>Vehicle Assigned</th>
+                  <th>Cargo Capacity Utilization</th>
+                  <th>Planned Distance</th>
+                  <th>Status</th>
+                  <th class="actions-header">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="trip-table-body">
+                <tr class="empty-state-row">
+                  <td colspan="7">
+                    <div class="loading-state">
+                      <div class="spinner"></div>
+                      <span>Loading trip registry...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <!-- Form Modal (Register / Edit Driver) -->
+  <div id="driver-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 id="modal-title">Register New Driver</h3>
+        <button id="modal-close-btn" class="modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="driver-form" class="modal-form" novalidate>
+        <input type="hidden" id="form-driver-id">
+        
+        <div class="form-row">
+          <div class="form-field">
+            <label for="form-name">Full Name *</label>
+            <input type="text" id="form-name" placeholder="John Doe" required>
+            <span class="field-error" id="error-name"></span>
+          </div>
+          
+          <div class="form-field">
+            <label for="form-contact">Contact Number *</label>
+            <input type="tel" id="form-contact" placeholder="+1-555-0199" required>
+            <span class="field-error" id="error-contact"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="form-license-num">License Number *</label>
+            <input type="text" id="form-license-num" placeholder="TX998877" required>
+            <span class="field-error" id="error-license-num"></span>
+          </div>
+          
+          <div class="form-field">
+            <label for="form-license-cat">License Category *</label>
+            <input type="text" id="form-license-cat" placeholder="CDL Class A" required>
+            <span class="field-error" id="error-license-cat"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="form-expiry">License Expiry Date *</label>
+            <input type="date" id="form-expiry" required>
+            <span class="field-error" id="error-expiry"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="form-status">Initial Status</label>
+            <select id="form-status">
+              <option value="Available">Available</option>
+              <option value="On Trip">On Trip</option>
+              <option value="Off Duty">Off Duty</option>
+              <option value="Suspended">Suspended</option>
+            </select>
+            <span class="field-error" id="error-status"></span>
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="form-safety">Safety Score (0 - 100)</label>
+          <div class="slider-container">
+            <input type="range" id="form-safety" min="0" max="100" value="100" class="score-slider">
+            <span id="slider-val" class="slider-badge">100</span>
+          </div>
+          <span class="field-error" id="error-safety"></span>
+        </div>
+
+        <div id="form-safety-log-section" class="form-field hidden">
+          <label>Safety Score History (Audit Log)</label>
+          <div id="form-safety-log-list" class="safety-log-list" style="max-height: 120px; overflow-y: auto; background: rgba(0,0,0,0.2); border: 1px solid var(--border-color); border-radius: var(--border-radius-sm); padding: 12px; font-size: 12px; display: flex; flex-direction: column; gap: 8px;">
+            <!-- Rendered dynamically -->
+          </div>
+        </div>
+
+        <div id="form-summary-error" class="form-summary-error hidden"></div>
+
+        <div class="modal-footer">
+          <button type="button" id="form-cancel-btn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" id="form-submit-btn" class="btn btn-primary">Save Profile</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Safety Event Modal -->
+  <div id="safety-modal" class="modal-overlay hidden">
+    <div class="modal-card modal-sm">
+      <div class="modal-header">
+        <h3>Log Safety Event</h3>
+        <button id="safety-modal-close-btn" class="modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="safety-form" class="modal-form">
+        <input type="hidden" id="safety-driver-id">
+        <p class="modal-subtitle">Record a driving event for <strong id="safety-driver-name">Driver</strong>. This will modify their safety score.</p>
+        
+        <div class="form-field">
+          <label for="safety-event-type">Event Type</label>
+          <select id="safety-event-type">
+            <option value="REWARD_EXCELLENT">Safe Driving Reward (+10 pts)</option>
+            <option value="REWARD_GOOD">Minor Merit Award (+5 pts)</option>
+            <option value="INFRACTION_MINOR">Minor Speeding Infraction (-10 pts)</option>
+            <option value="INFRACTION_MEDIUM">Tailgating / Hard Braking (-20 pts)</option>
+            <option value="INFRACTION_MAJOR">Reckless Driving / Red Light Violations (-40 pts)</option>
+            <option value="CUSTOM">Custom Score Adjustment</option>
+          </select>
+        </div>
+
+        <div id="custom-score-field" class="form-field hidden">
+          <label for="custom-score-input">New Safety Score (0 - 100)</label>
+          <input type="number" id="custom-score-input" min="0" max="100">
+        </div>
+
+        <div class="form-field">
+          <label for="safety-event-desc">Event Description / Reason *</label>
+          <input type="text" id="safety-event-desc" placeholder="e.g. Completed route with no safety issues" required>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" id="safety-cancel-btn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Apply Event</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Form Modal (Create Trip) -->
+  <div id="trip-modal" class="modal-overlay hidden">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>Create New Trip</h3>
+        <button id="trip-modal-close-btn" class="modal-close">
+          <i data-lucide="x"></i>
+        </button>
+      </div>
+      <form id="trip-form" class="modal-form" novalidate>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="trip-form-source">Source Location *</label>
+            <input type="text" id="trip-form-source" placeholder="e.g. Warehouse A" required>
+            <span class="field-error" id="error-trip-source"></span>
+          </div>
+          
+          <div class="form-field">
+            <label for="trip-form-destination">Destination Location *</label>
+            <input type="text" id="trip-form-destination" placeholder="e.g. Retail Center B" required>
+            <span class="field-error" id="error-trip-destination"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="trip-form-cargo">Cargo Weight (kg) *</label>
+            <input type="number" id="trip-form-cargo" placeholder="e.g. 1500" min="1" required>
+            <span class="field-error" id="error-trip-cargo"></span>
+          </div>
+          
+          <div class="form-field">
+            <label for="trip-form-distance">Planned Distance (km) *</label>
+            <input type="number" id="trip-form-distance" placeholder="e.g. 120" min="1" required>
+            <span class="field-error" id="error-trip-distance"></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="trip-form-driver">Select Available Driver *</label>
+            <select id="trip-form-driver" required>
+              <option value="">-- Choose Driver --</option>
+            </select>
+            <span class="field-error" id="error-trip-driver"></span>
+          </div>
+
+          <div class="form-field">
+            <label for="trip-form-vehicle">Select Available Vehicle *</label>
+            <select id="trip-form-vehicle" required>
+              <option value="">-- Choose Vehicle --</option>
+            </select>
+            <span class="field-error" id="error-trip-vehicle"></span>
+          </div>
+        </div>
+
+        <div id="trip-form-summary-error" class="form-summary-error hidden"></div>
+
+        <div class="modal-footer">
+          <button type="button" id="trip-form-cancel-btn" class="btn btn-secondary">Cancel</button>
+          <button type="submit" class="btn btn-primary">Create Trip</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Vite load TS module -->
+  <script type="module" src="/src/ui/app.ts"></script>
+</body>
+</html>
