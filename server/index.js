@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+const vehicleRoutes = require("./routes/vehicleRoutes");
 
 const connectDB = require("./config/db");
 
@@ -12,6 +13,9 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
+
+// Register routes
+app.use("/api/vehicles", vehicleRoutes);
 
 app.get("/", (req, res) => {
     res.send("Transport Maintenance API Running...");
