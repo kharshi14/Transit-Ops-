@@ -646,19 +646,24 @@ async function renderDriversView() {
       </td>
       <td>
         <div class="actions-cell">
-          ${currentUser && currentUser.role === UserRole.Admin ? `
-            <button class="btn-icon log-safety-btn" title="Log Safety Event" data-id="${driver.id}">
-              <i data-lucide="shield-alert"></i>
-            </button>
-            <button class="btn-icon edit-btn" title="Edit Profile & View Logs" data-id="${driver.id}">
-              <i data-lucide="edit-3"></i>
-            </button>
-            <button class="btn-icon danger-hover delete-btn" title="Delete Driver" data-id="${driver.id}">
-              <i data-lucide="trash-2"></i>
-            </button>
-          ` : `
-            <span class="route-subtext">Admin only</span>
-          `}
+          <button class="btn-icon log-safety-btn ${currentUser && currentUser.role === UserRole.Admin ? '' : 'rbac-blocked'}" 
+                  title="${currentUser && currentUser.role === UserRole.Admin ? 'Log Safety Event' : 'Safety event logs require Admin role'}" 
+                  data-id="${driver.id}"
+                  ${currentUser && currentUser.role === UserRole.Admin ? '' : 'disabled'}>
+            <i data-lucide="shield-alert"></i>
+          </button>
+          <button class="btn-icon edit-btn ${currentUser && currentUser.role === UserRole.Admin ? '' : 'rbac-blocked'}" 
+                  title="${currentUser && currentUser.role === UserRole.Admin ? 'Edit Profile & View Logs' : 'Editing profiles requires Admin role'}" 
+                  data-id="${driver.id}"
+                  ${currentUser && currentUser.role === UserRole.Admin ? '' : 'disabled'}>
+            <i data-lucide="edit-3"></i>
+          </button>
+          <button class="btn-icon danger-hover delete-btn ${currentUser && currentUser.role === UserRole.Admin ? '' : 'rbac-blocked'}" 
+                  title="${currentUser && currentUser.role === UserRole.Admin ? 'Delete Driver' : 'Deleting profiles requires Admin role'}" 
+                  data-id="${driver.id}"
+                  ${currentUser && currentUser.role === UserRole.Admin ? '' : 'disabled'}>
+            <i data-lucide="trash-2"></i>
+          </button>
         </div>
       </td>
     `;
@@ -779,24 +784,24 @@ async function renderVehiclesView() {
       </td>
       <td>
         <div class="actions-cell">
-          ${currentUser && currentUser.role === UserRole.Admin ? `
-            <button class="btn-icon update-odo-btn" title="Update Odometer" data-id="${vehicle.id}">
-              <i data-lucide="wrench"></i>
-            </button>
-            <button class="btn-icon edit-vehicle-btn" title="Edit Specs" data-id="${vehicle.id}">
-              <i data-lucide="edit-3"></i>
-            </button>
-            <button class="btn-icon danger-hover delete-vehicle-btn" title="Remove Vehicle" data-id="${vehicle.id}">
-              <i data-lucide="trash-2"></i>
-            </button>
-          ` : currentUser && currentUser.role === UserRole.Maintenance ? `
-            <button class="btn-icon update-odo-btn" title="Update Odometer" data-id="${vehicle.id}">
-              <i data-lucide="wrench"></i>
-            </button>
-            <span class="route-subtext">Maint. Access</span>
-          ` : `
-            <span class="route-subtext">Read-only</span>
-          `}
+          <button class="btn-icon update-odo-btn ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Maintenance) ? '' : 'rbac-blocked'}" 
+                  title="${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Maintenance) ? 'Update Odometer' : 'Updating odometer requires Maintenance or Admin role'}" 
+                  data-id="${vehicle.id}"
+                  ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Maintenance) ? '' : 'disabled'}>
+            <i data-lucide="wrench"></i>
+          </button>
+          <button class="btn-icon edit-vehicle-btn ${currentUser && currentUser.role === UserRole.Admin ? '' : 'rbac-blocked'}" 
+                  title="${currentUser && currentUser.role === UserRole.Admin ? 'Edit Specs' : 'Editing specs requires Admin role'}" 
+                  data-id="${vehicle.id}"
+                  ${currentUser && currentUser.role === UserRole.Admin ? '' : 'disabled'}>
+            <i data-lucide="edit-3"></i>
+          </button>
+          <button class="btn-icon danger-hover delete-vehicle-btn ${currentUser && currentUser.role === UserRole.Admin ? '' : 'rbac-blocked'}" 
+                  title="${currentUser && currentUser.role === UserRole.Admin ? 'Remove Vehicle' : 'Removing vehicles requires Admin role'}" 
+                  data-id="${vehicle.id}"
+                  ${currentUser && currentUser.role === UserRole.Admin ? '' : 'disabled'}>
+            <i data-lucide="trash-2"></i>
+          </button>
         </div>
       </td>
     `;
@@ -940,26 +945,31 @@ async function renderTripsView() {
       </td>
       <td>
         <div class="actions-cell">
-          ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? `
-            ${isDraft ? `
-              <button class="btn btn-secondary btn-icon dispatch-trip-btn" title="Dispatch Trip" data-id="${trip.id}">
-                <i data-lucide="send"></i>
-              </button>
-            ` : ''}
-            ${isDispatched ? `
-              <button class="btn btn-secondary btn-icon complete-trip-btn" title="Mark Completed" data-id="${trip.id}">
-                <i data-lucide="check-square"></i>
-              </button>
-            ` : ''}
-            ${!isTerminal ? `
-              <button class="btn btn-secondary btn-icon danger-hover cancel-trip-btn" title="Cancel Trip" data-id="${trip.id}">
-                <i data-lucide="slash"></i>
-              </button>
-            ` : `
-              <span class="route-subtext">—</span>
-            `}
+          ${isDraft ? `
+            <button class="btn btn-secondary btn-icon dispatch-trip-btn ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? '' : 'rbac-blocked'}" 
+                    title="${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? 'Dispatch Trip' : 'Dispatching trips requires Dispatcher or Admin role'}" 
+                    data-id="${trip.id}"
+                    ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? '' : 'disabled'}>
+              <i data-lucide="send"></i>
+            </button>
+          ` : ''}
+          ${isDispatched ? `
+            <button class="btn btn-secondary btn-icon complete-trip-btn ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? '' : 'rbac-blocked'}" 
+                    title="${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? 'Mark Completed' : 'Completing trips requires Dispatcher or Admin role'}" 
+                    data-id="${trip.id}"
+                    ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? '' : 'disabled'}>
+              <i data-lucide="check-square"></i>
+            </button>
+          ` : ''}
+          ${!isTerminal ? `
+            <button class="btn btn-secondary btn-icon danger-hover cancel-trip-btn ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? '' : 'rbac-blocked'}" 
+                    title="${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? 'Cancel Trip' : 'Cancelling trips requires Dispatcher or Admin role'}" 
+                    data-id="${trip.id}"
+                    ${currentUser && (currentUser.role === UserRole.Admin || currentUser.role === UserRole.Dispatcher) ? '' : 'disabled'}>
+              <i data-lucide="slash"></i>
+            </button>
           ` : `
-            <span class="route-subtext">Read-only</span>
+            <span class="route-subtext">—</span>
           `}
         </div>
       </td>

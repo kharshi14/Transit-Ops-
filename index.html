@@ -101,26 +101,28 @@
         <section class="table-controls dashboard-controls-section">
           <div class="filters-row dashboard-filters-row">
             <div class="filter-group">
-              <label for="dashboard-type-filter">Vehicle Type</label>
-              <select id="dashboard-type-filter">
-                <option value="ALL">All Types</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="dashboard-status-filter">Fleet Status</label>
-              <select id="dashboard-status-filter">
-                <option value="ALL">All Statuses</option>
-                <option value="Available">Available</option>
-                <option value="On Trip">On Trip</option>
-                <option value="In Shop">In Shop</option>
-                <option value="Retired">Retired</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="dashboard-region-filter">Operations Region</label>
-              <select id="dashboard-region-filter">
-                <option value="ALL">All Regions</option>
-              </select>
+              <div class="select-wrapper">
+                <i data-lucide="truck" class="select-icon"></i>
+                <select id="dashboard-type-filter">
+                  <option value="ALL">All Vehicle Types</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <i data-lucide="filter" class="select-icon"></i>
+                <select id="dashboard-status-filter">
+                  <option value="ALL">All Fleet Statuses</option>
+                  <option value="Available">Available</option>
+                  <option value="On Trip">On Trip</option>
+                  <option value="In Shop">In Shop</option>
+                  <option value="Retired">Retired</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <i data-lucide="globe" class="select-icon"></i>
+                <select id="dashboard-region-filter">
+                  <option value="ALL">All Regions</option>
+                </select>
+              </div>
             </div>
           </div>
         </section>
@@ -508,24 +510,26 @@
           </div>
           <div class="filters-row">
             <div class="filter-group">
-              <label for="status-vehicle-filter">Status</label>
-              <select id="status-vehicle-filter">
-                <option value="ALL">All Statuses</option>
-                <option value="Available">Available</option>
-                <option value="On Trip">On Trip</option>
-                <option value="In Shop">In Shop</option>
-                <option value="Retired">Retired</option>
-              </select>
-            </div>
-            <div class="filter-group">
-              <label for="type-vehicle-filter">Type</label>
-              <select id="type-vehicle-filter">
-                <option value="ALL">All Types</option>
-                <option value="Heavy Truck">Heavy Truck</option>
-                <option value="Medium Truck">Medium Truck</option>
-                <option value="Cargo Van">Cargo Van</option>
-                <option value="Shuttle Bus">Shuttle Bus</option>
-              </select>
+              <div class="select-wrapper">
+                <i data-lucide="filter" class="select-icon"></i>
+                <select id="status-vehicle-filter">
+                  <option value="ALL">All Statuses</option>
+                  <option value="Available">Available</option>
+                  <option value="On Trip">On Trip</option>
+                  <option value="In Shop">In Shop</option>
+                  <option value="Retired">Retired</option>
+                </select>
+              </div>
+              <div class="select-wrapper">
+                <i data-lucide="truck" class="select-icon"></i>
+                <select id="type-vehicle-filter">
+                  <option value="ALL">All Types</option>
+                  <option value="Heavy Truck">Heavy Truck</option>
+                  <option value="Medium Truck">Medium Truck</option>
+                  <option value="Cargo Van">Cargo Van</option>
+                  <option value="Shuttle Bus">Shuttle Bus</option>
+                </select>
+              </div>
             </div>
             <button id="add-vehicle-btn" class="btn btn-primary btn-with-icon">
               <i data-lucide="plus"></i>
